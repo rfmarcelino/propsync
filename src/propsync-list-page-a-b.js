@@ -1,4 +1,32 @@
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('🚀 PropSync List Page A/B Script Loaded');
+
+  // --- Debug: Check for missing classes ---
+  const missingClasses = [];
+  const requiredSelectors = {
+    'cards': '.card-wrapper',
+    'filterButton': '.button-filter',
+    'resetButton': '.button-reset',
+    'bedroomWrappers': '.bedroom-wrapper',
+    'priceRange': '.price-range',
+    'sqrRange': '.sqr-range'
+  };
+
+  Object.entries(requiredSelectors).forEach(([name, selector]) => {
+    const elements = document.querySelectorAll(selector);
+    if (elements.length === 0) {
+      missingClasses.push(selector);
+    }
+    console.log(`${name} (${selector}): ${elements.length} found`);
+  });
+
+  if (missingClasses.length > 0) {
+    console.warn('❌ Missing required CSS classes:', missingClasses);
+    console.log('📋 Add these classes in Webflow:');
+    missingClasses.forEach(cls => console.log(`   - ${cls}`));
+  } else {
+    console.log('✅ All required classes found!');
+  }
 
   // --- Check availability link ---
   const applyButtons = document.querySelectorAll('[applylink]');
@@ -72,6 +100,31 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Initialization ---
   function initializeFilters() {
     console.log("Initializing filters...");
+
+    // Debug: Show what card-like elements exist
+    if (!cards || cards.length === 0) {
+      console.warn("❌ No cards found with class '.card-wrapper'");
+      console.log("🔍 Looking for potential card elements...");
+
+      // Look for common card patterns
+      const potentialCards = [
+        document.querySelectorAll('[class*="card"]'),
+        document.querySelectorAll('[class*="floor-plan"]'),
+        document.querySelectorAll('[class*="unit"]'),
+        document.querySelectorAll('[class*="listing"]')
+      ];
+
+      potentialCards.forEach((elements, index) => {
+        const patterns = ['card', 'floor-plan', 'unit', 'listing'];
+        if (elements.length > 0) {
+          console.log(`   Found ${elements.length} elements with "${patterns[index]}" in class name`);
+          console.log(`   First element classes:`, elements[0].className);
+        }
+      });
+
+      console.log("💡 Add 'card-wrapper' class to your floor plan card containers");
+    }
+
     // Reset overall ranges
     overallMinPrice = Infinity;
     overallMaxPrice = -Infinity;
@@ -144,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Price Slider
     if (priceRangeContainer && priceMinDisplay && priceMaxDisplay) {
-      console.log("Setting up Price Slider UI");
+      console.log("✅ Setting up Price Slider UI");
       priceMinDisplay.textContent = formatCurrency(overallMinPrice);
       priceMaxDisplay.textContent = formatCurrency(overallMaxPrice);
       priceRangeContainer.dataset.min = overallMinPrice;
@@ -158,12 +211,18 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       console.log("Price data attributes:", priceRangeContainer.dataset.min, priceRangeContainer.dataset.max);
     } else {
-      console.warn("Price slider UI elements (container, min/max display) not found.");
+      console.warn("❌ Price slider UI elements not found:");
+      console.log(`   .price-range container: ${priceRangeContainer ? '✅' : '❌'}`);
+      console.log(`   .price-min display: ${priceMinDisplay ? '✅' : '❌'}`);
+      console.log(`   .price-max display: ${priceMaxDisplay ? '✅' : '❌'}`);
+      console.log(`   .price-min-handler: ${priceMinHandler ? '✅' : '❌'}`);
+      console.log(`   .price-max-handler: ${priceMaxHandler ? '✅' : '❌'}`);
+      console.log(`   .price-range-bar: ${priceRangeBar ? '✅' : '❌'}`);
     }
 
     // Sqr Footage Slider
     if (sqrRangeContainer && sqrMinDisplay && sqrMaxDisplay) {
-      console.log("Setting up Area Slider UI");
+      console.log("✅ Setting up Area Slider UI");
       sqrMinDisplay.textContent = formatSqft(overallMinSqr);
       sqrMaxDisplay.textContent = formatSqft(overallMaxSqr);
       sqrRangeContainer.dataset.min = overallMinSqr;
@@ -178,7 +237,13 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log("Sqr data attributes:", sqrRangeContainer.dataset.min, sqrRangeContainer.dataset.max);
 
     } else {
-      console.warn("Area slider UI elements (container, min/max display) not found. Check '.sqr-range' selector and children.");
+      console.warn("❌ Area slider UI elements not found:");
+      console.log(`   .sqr-range container: ${sqrRangeContainer ? '✅' : '❌'}`);
+      console.log(`   .sqr-min display: ${sqrMinDisplay ? '✅' : '❌'}`);
+      console.log(`   .sqr-max display: ${sqrMaxDisplay ? '✅' : '❌'}`);
+      console.log(`   .sqr-min-handler: ${sqrMinHandler ? '✅' : '❌'}`);
+      console.log(`   .sqr-max-handler: ${sqrMaxHandler ? '✅' : '❌'}`);
+      console.log(`   .sqr-range-bar: ${sqrRangeBar ? '✅' : '❌'}`);
     }
 
     // Initial results count
