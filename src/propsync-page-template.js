@@ -21,18 +21,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Format prices with commas ---
   const priceElements = document.querySelectorAll('.price-min-card-value, .price-max-card-value');
   priceElements.forEach(priceEl => {
-    const price = parseVal(document, '.' + priceEl.className.split(' ')[0]);
-    if (price !== null && price >= 0) {
-      priceEl.textContent = Math.round(price).toLocaleString();
+    if (priceEl.textContent) {
+      const value = priceEl.textContent.trim().replace(/[^0-9.]+/g, '');
+      const price = parseInt(value, 10);
+      if (!isNaN(price) && price >= 0) {
+        priceEl.textContent = price.toLocaleString();
+      }
     }
   });
 
   // --- Format square footage with commas ---
   const sqrElements = document.querySelectorAll('.sqr-min-card-value, .sqr-max-card-value');
   sqrElements.forEach(sqrEl => {
-    const sqr = parseVal(document, '.' + sqrEl.className.split(' ')[0]);
-    if (sqr !== null) {
-      sqrEl.textContent = Math.round(sqr).toLocaleString();
+    if (sqrEl.textContent) {
+      const value = sqrEl.textContent.trim().replace(/[^0-9.]+/g, '');
+      const sqr = parseInt(value, 10);
+      if (!isNaN(sqr)) {
+        sqrEl.textContent = sqr.toLocaleString();
+      }
     }
   });
   // Square footage comparison
