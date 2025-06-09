@@ -3,7 +3,7 @@ name: Build and Commit
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build:
@@ -32,3 +32,8 @@ jobs:
           git add dist/
           git commit -m "build: Generate minified script" || echo "No changes to commit"
           git push
+
+      - name: Display CDN URL
+        run: |
+          echo "✅ Script updated and available via jsDelivr CDN:"
+          echo "📋 https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync.js"

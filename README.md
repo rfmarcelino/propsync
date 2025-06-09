@@ -10,7 +10,7 @@ Add this script tag to your pages **before the closing `</body>` tag**:
 
 ```html
 <!-- Unified PropSync Script for All Page Types -->
-<script src="https://cdn.jsdelivr.net/gh/interactive-inputs/propsync@main/dist/propsync.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync.js"></script>
 ```
 
 ## 📁 File Structure
@@ -65,7 +65,7 @@ npm run build        # Build once (manual)
 
 ### For Developers
 1. **Edit** the `src/propsync.js` file
-2. **Push** to the main branch
+2. **Push** to the master branch
 3. **GitHub Actions** automatically builds and commits to the repo
 4. **jsDelivr CDN** serves the updated file within minutes
 
@@ -75,10 +75,27 @@ npm run build        # Build once (manual)
 3. **Run** `npm run watch` to watch for changes
 4. **Edit** the `src/propsync.js` file and see the build output in `dist/`
 
+## 🔧 jsDelivr CDN Features
+
+### Version Control
+```html
+<!-- Always use latest (recommended for production) -->
+<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync.js"></script>
+
+<!-- Pin to specific version/tag -->
+<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@v1.0.0/dist/propsync.js"></script>
+
+<!-- Pin to specific commit -->
+<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@abc1234/dist/propsync.js"></script>
+```
+
+### CORS Solution
+jsDelivr automatically includes proper CORS headers - no additional attributes needed!
+
 ### Quick Test
 ```javascript
 // Test in browser console
-fetch('https://cdn.jsdelivr.net/gh/interactive-inputs/propsync@main/dist/propsync.js')
+fetch('https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync.js')
   .then(r => r.text())
   .then(console.log)
   .catch(console.error);

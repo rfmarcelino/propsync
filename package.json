@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/interactive-inputs/propsync.git"
+    "url": "git+https://github.com/rfmarcelino/propsync.git"
   },
   "keywords": ["propsync", "javascript", "webflow"],
   "author": "PropSync Team",
