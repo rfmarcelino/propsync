@@ -35,11 +35,19 @@ dist/                   # Built files (compressed, ~60% smaller)
 
 ## 🛠 Development
 
-### Building Scripts
+### Automated Building (GitLab CI)
+The build process is **fully automated**! When you push changes to `src/` files:
+
+1. **GitLab CI** automatically runs `npm run build`
+2. **Compressed files** are generated in `dist/`
+3. **Files are committed** back to the repository
+4. **CDN links** are immediately updated
+
+### Local Development
 ```bash
 npm install          # Install dependencies
-npm run build        # Build all files
-npm run build:watch  # Build and watch for changes
+npm run dev          # Watch and build changes automatically
+npm run build        # Build once (manual)
 ```
 
 ### Required CSS Classes
@@ -52,6 +60,20 @@ npm run build:watch  # Build and watch for changes
 
 **For All Page Types (cards):**
 - `.card-wrapper` → `.bedroom-card-value`, `.bathroom-card-value`, `.sqr-min-card-value`, `.sqr-spacer`, `.sqr-max-card-value`, `.startingat`, `.price-min-dollar`, `.price-min-card-value`, `.price-spacer`, `.price-max-dollar`, `.price-max-card-value`
+
+## 🔄 Workflow
+
+### For Developers
+1. **Edit** files in `src/` directory
+2. **Push** to master/main branch
+3. **GitLab CI** automatically builds and updates `dist/`
+4. **CDN links** are immediately available
+
+### For Local Development
+1. **Clone** the repository
+2. **Run** `npm install`
+3. **Run** `npm run dev` to watch for changes
+4. **Edit** files in `src/` and see builds in `dist/`
 
 ## 📊 Compression Stats
 

@@ -1,0 +1,51 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  NODE_VERSION: "18"
+
+cache:
+  paths:
+    - node_modules/
+
+build_scripts:
+  stage: build
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - npm ci --cache .npm --prefer-offline
+  script:
+    - npm run build
+    - echo "Build completed successfully"
+    - ls -la dist/
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 hour
+  only:
+    - master
+    - main
+    - develop
+
+deploy_to_repo:
+  stage: deploy
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - build_scripts
+  before_script:
+    - apk add --no-cache git
+    - git config --global user.email "ci@omibee.com"
+    - git config --global user.name "GitLab CI"
+  script:
+    - git add dist/
+    - |
+      if ! git diff --cached --quiet; then
+        git commit -m "CI: Update compressed JavaScript files [skip ci]"
+        git push https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git HEAD:${CI_COMMIT_REF_NAME}
+        echo "✅ Compressed files updated and pushed"
+      else
+        echo "✅ No changes in compressed files"
+      fi
+  only:
+    - master
+    - main
