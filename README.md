@@ -46,14 +46,13 @@ dist/                   # Built files (compressed, ~60% smaller)
 
 ## 🛠 Development
 
-### Automated Building (GitLab CI + jsDelivr)
+### Automated Building (GitHub Actions + jsDelivr)
 The build process is **fully automated**! When you push changes to `src/` files:
 
-1. **GitLab CI** automatically runs `npm run build`
+1. **GitHub Actions** automatically runs `npm run build`
 2. **Compressed files** are generated in `dist/`
 3. **Files are committed** back to the repository
-4. **Changes are synced** to GitHub automatically
-5. **jsDelivr CDN** serves the latest compressed files within minutes
+4. **jsDelivr CDN** serves the latest compressed files within minutes
 
 ### Local Development
 ```bash
@@ -78,8 +77,8 @@ npm run build        # Build once (manual)
 ### For Developers
 1. **Edit** files in `src/` directory
 2. **Push** to master/main branch
-3. **GitLab CI** automatically builds and commits to repo
-4. **Raw file URLs** serve updated files immediately
+3. **GitHub Actions** automatically builds and commits to repo
+4. **jsDelivr CDN** serves updated files within minutes
 
 ### For Local Development
 1. **Clone** the repository
