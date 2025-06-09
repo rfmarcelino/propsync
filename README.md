@@ -10,13 +10,13 @@ Add these script tags to your pages **before the closing `</body>` tag**:
 
 ```html
 <!-- For Page Template (Floor Plans A, B, C and PropSync Floor Plans Template) -->
-<script src="https://git.omibee.com/products/propsync/-/raw/master/dist/propsync-page-template.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync-page-template.js"></script>
 
 <!-- For List Pages A & B (with filtering) -->
-<script src="https://git.omibee.com/products/propsync/-/raw/master/dist/propsync-list-page-a-b.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync-list-page-a-b.js"></script>
 
 <!-- For List Page C (with accordion) -->
-<script src="https://git.omibee.com/products/propsync/-/raw/master/dist/propsync-list-page-c.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync-list-page-c.js"></script>
 ```
 
 ## 📁 File Structure
@@ -34,25 +34,26 @@ dist/                   # Built files (compressed, ~60% smaller)
 
 ```
 
-## 🌐 GitLab Raw File CDN
+## 🌐 jsDelivr CDN (GitHub)
 
-- **Direct Access**: Files served directly from GitLab
+- **Global CDN**: Fast delivery worldwide with edge caching
 - **HTTPS**: Secure delivery by default
-- **CORS Ready**: Using `crossorigin="anonymous"` attribute
-- **Automatic Updates**: Files update immediately after git push
-- **Version Control**: Can access specific commits or branches
-- **Zero External Dependencies**: No third-party CDN required
-- **Private Repository Support**: Works with private repos (if authenticated)
+- **CORS Ready**: Full CORS support out of the box
+- **Automatic Updates**: Files update within minutes after git push
+- **Version Control**: Can access specific commits, branches, or tags
+- **High Performance**: Optimized for speed and reliability
+- **Free**: No cost for open source projects
 
 ## 🛠 Development
 
-### Automated Building (GitLab CI + Raw Files)
+### Automated Building (GitLab CI + jsDelivr)
 The build process is **fully automated**! When you push changes to `src/` files:
 
 1. **GitLab CI** automatically runs `npm run build`
 2. **Compressed files** are generated in `dist/`
 3. **Files are committed** back to the repository
-4. **Raw file URLs** serve the latest compressed files immediately
+4. **Changes are synced** to GitHub automatically
+5. **jsDelivr CDN** serves the latest compressed files within minutes
 
 ### Local Development
 ```bash
@@ -86,27 +87,27 @@ npm run build        # Build once (manual)
 3. **Run** `npm run dev` to watch for changes
 4. **Edit** files in `src/` and see builds in `dist/`
 
-## 🔧 GitLab Raw File Features
+## 🔧 jsDelivr CDN Features
 
 ### Version Control
 ```html
-<!-- Always use latest (recommended for development) -->
-<script src="https://git.omibee.com/products/propsync/-/raw/master/dist/propsync-page-template.js" crossorigin="anonymous"></script>
+<!-- Always use latest (recommended for production) -->
+<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync-page-template.js"></script>
 
-<!-- Pin to specific branch -->
-<script src="https://git.omibee.com/products/propsync/-/raw/develop/dist/propsync-page-template.js" crossorigin="anonymous"></script>
+<!-- Pin to specific version/tag -->
+<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@v1.0.0/dist/propsync-page-template.js"></script>
 
 <!-- Pin to specific commit -->
-<script src="https://git.omibee.com/products/propsync/-/raw/abc1234/dist/propsync-page-template.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@abc1234/dist/propsync-page-template.js"></script>
 ```
 
 ### CORS Solution
-The `crossorigin="anonymous"` attribute tells the browser to handle CORS properly for cross-origin script loading.
+jsDelivr automatically includes proper CORS headers - no additional attributes needed!
 
 ### Quick Test
 ```javascript
 // Test in browser console
-fetch('https://git.omibee.com/products/propsync/-/raw/master/dist/propsync-page-template.js')
+fetch('https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync-page-template.js')
   .then(r => r.text())
   .then(console.log)
   .catch(console.error);
