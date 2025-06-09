@@ -59,7 +59,7 @@ async function buildAll() {
   }
 
   const files = fs.readdirSync(srcDir)
-    .filter(file => file.endsWith('.js'))
+    .filter(file => file === 'propsync.js')
     .map(file => path.join(srcDir, file));
 
   for (const file of files) {
@@ -67,8 +67,7 @@ async function buildAll() {
   }
 
   console.log(`\nBuild complete! ${files.length} files processed.`);
-  console.log('Files available via jsDelivr CDN:');
-  console.log('https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/');
+  console.log(`Files available at: https://git.omibee.com/products/propsync/-/raw/master/dist/`);
 }
 
 if (process.argv.includes('--watch')) {

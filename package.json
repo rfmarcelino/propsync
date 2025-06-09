@@ -1,21 +1,23 @@
 {
   "name": "propsync-scripts",
   "version": "1.0.0",
-  "description": "Centralized JavaScript files for PropSync pages",
-  "main": "index.js",
+  "description": "A comprehensive JavaScript solution for property listing websites, offering advanced filtering, interactive accordions, and dynamic content updates. Designed for seamless integration with Webflow CMS.",
+  "main": "src/propsync.js",
   "scripts": {
     "build": "node build.js",
-    "build:watch": "node build.js --watch",
+    "watch": "node build.js --watch",
     "dev": "npm run build:watch",
     "serve": "node -e \"const http = require('http'); const fs = require('fs'); const path = require('path'); const server = http.createServer((req, res) => { const filePath = path.join(__dirname, 'dist', req.url === '/' ? 'index.html' : req.url); const ext = path.extname(filePath); const contentType = ext === '.js' ? 'application/javascript' : ext === '.css' ? 'text/css' : 'text/html'; try { const content = fs.readFileSync(filePath); res.writeHead(200, { 'Content-Type': contentType, 'Access-Control-Allow-Origin': '*' }); res.end(content); } catch (err) { res.writeHead(404); res.end('Not found'); } }); server.listen(3000, () => console.log('Server running on http://localhost:3000'));\""
   },
   "devDependencies": {
-    "terser": "^5.24.0",
-    "chokidar": "^3.5.3"
+    "chokidar": "^3.6.0",
+    "esbuild": "^0.20.2",
+    "fs-extra": "^11.2.0",
+    "terser": "^5.31.1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://git.omibee.com/products/propsync.git"
+    "url": "git+https://github.com/interactive-inputs/propsync.git"
   },
   "keywords": ["propsync", "javascript", "webflow"],
   "author": "PropSync Team",

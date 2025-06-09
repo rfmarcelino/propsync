@@ -1,37 +1,26 @@
 # PropSync JavaScript Library
 
-Centralized JavaScript files for PropSync pages with automatic compression and CDN delivery.
+A unified JavaScript solution for PropSync pages with automatic compression and CDN delivery.
 
 ## 🚀 Quick Start
 
-### Using the Scripts
+### Using the Script
 
-Add these script tags to your pages **before the closing `</body>` tag**:
+Add this script tag to your pages **before the closing `</body>` tag**:
 
 ```html
-<!-- For Page Template (Floor Plans A, B, C and PropSync Floor Plans Template) -->
-<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync-page-template.js"></script>
-
-<!-- For List Pages A & B (with filtering) -->
-<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync-list-page-a-b.js"></script>
-
-<!-- For List Page C (with accordion) -->
-<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync-list-page-c.js"></script>
+<!-- Unified PropSync Script for All Page Types -->
+<script src="https://cdn.jsdelivr.net/gh/interactive-inputs/propsync@main/dist/propsync.js"></script>
 ```
 
 ## 📁 File Structure
 
 ```
-src/                    # Source files (uncompressed)
-├── propsync-page-template.js
-├── propsync-list-page-a-b.js
-└── propsync-list-page-c.js
+src/
+└── propsync.js      # Source file (uncompressed)
 
-dist/                   # Built files (compressed, ~60% smaller)
-├── propsync-page-template.js
-├── propsync-list-page-a-b.js
-└── propsync-list-page-c.js
-
+dist/
+└── propsync.js      # Built file (compressed)
 ```
 
 ## 🌐 jsDelivr CDN (GitHub)
@@ -47,17 +36,17 @@ dist/                   # Built files (compressed, ~60% smaller)
 ## 🛠 Development
 
 ### Automated Building (GitHub Actions + jsDelivr)
-The build process is **fully automated**! When you push changes to `src/` files:
+The build process is **fully automated**! When you push changes to `src/propsync.js`:
 
 1. **GitHub Actions** automatically runs `npm run build`
-2. **Compressed files** are generated in `dist/`
-3. **Files are committed** back to the repository
-4. **jsDelivr CDN** serves the latest compressed files within minutes
+2. The **compressed file** is generated in `dist/`
+3. The **file is committed** back to the repository
+4. **jsDelivr CDN** serves the latest compressed file within minutes
 
 ### Local Development
 ```bash
 npm install          # Install dependencies
-npm run dev          # Watch and build changes automatically
+npm run watch        # Watch for file changes and build automatically
 npm run build        # Build once (manual)
 ```
 
@@ -75,29 +64,29 @@ npm run build        # Build once (manual)
 ## 🔄 Workflow
 
 ### For Developers
-1. **Edit** files in `src/` directory
-2. **Push** to master/main branch
-3. **GitHub Actions** automatically builds and commits to repo
-4. **jsDelivr CDN** serves updated files within minutes
+1. **Edit** the `src/propsync.js` file
+2. **Push** to the main branch
+3. **GitHub Actions** automatically builds and commits to the repo
+4. **jsDelivr CDN** serves the updated file within minutes
 
 ### For Local Development
 1. **Clone** the repository
 2. **Run** `npm install`
-3. **Run** `npm run dev` to watch for changes
-4. **Edit** files in `src/` and see builds in `dist/`
+3. **Run** `npm run watch` to watch for changes
+4. **Edit** the `src/propsync.js` file and see the build output in `dist/`
 
 ## 🔧 jsDelivr CDN Features
 
 ### Version Control
 ```html
 <!-- Always use latest (recommended for production) -->
-<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync-page-template.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/interactive-inputs/propsync@main/dist/propsync.js"></script>
 
 <!-- Pin to specific version/tag -->
-<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@v1.0.0/dist/propsync-page-template.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/interactive-inputs/propsync@v1.0.0/dist/propsync.js"></script>
 
 <!-- Pin to specific commit -->
-<script src="https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@abc1234/dist/propsync-page-template.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/interactive-inputs/propsync@abc1234/dist/propsync.js"></script>
 ```
 
 ### CORS Solution
@@ -106,7 +95,7 @@ jsDelivr automatically includes proper CORS headers - no additional attributes n
 ### Quick Test
 ```javascript
 // Test in browser console
-fetch('https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync-page-template.js')
+fetch('https://cdn.jsdelivr.net/gh/interactive-inputs/propsync@main/dist/propsync.js')
   .then(r => r.text())
   .then(console.log)
   .catch(console.error);
