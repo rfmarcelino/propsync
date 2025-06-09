@@ -5,6 +5,9 @@ on:
     branches:
       - master
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,6 +15,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -25,15 +30,26 @@ jobs:
       - name: Build the script
         run: npm run build
 
-      - name: Commit and push changes
+      - name: Check for changes
+        id: verify-changed-files
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          if [ -n "$(git status --porcelain dist/)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push changes
+        if: steps.verify-changed-files.outputs.changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           git add dist/
-          git commit -m "build: Generate minified script" || echo "No changes to commit"
+          git commit -m "build: Generate minified script [skip ci]"
           git push
 
       - name: Display CDN URL
+        if: steps.verify-changed-files.outputs.changed == 'true'
         run: |
           echo "✅ Script updated and available via jsDelivr CDN:"
           echo "📋 https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync.js"
