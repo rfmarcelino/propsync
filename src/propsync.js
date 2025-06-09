@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const parseVal = (el, selector, isFloat = false) => {
     const target = el.querySelector(selector);
     if (!target || !target.textContent) return null;
-    const value = target.textContent.trim().replace(/[^0-9.]+/g, '');
-    if (value === '') return null;
+    const value = target.textContent.trim().replace(/[^0-9.-]+/g, '');
+    if (value === '' || value === '-') return null;
     const num = isFloat ? parseFloat(value) : parseInt(value, 10);
     return isNaN(num) ? null : num;
   };
@@ -491,8 +491,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (bedElement && priceElement) {
         const bedValue = bedElement.textContent.trim();
-        const priceValue = parseInt(priceElement.textContent.trim().replace(/[^0-9]/g, ''), 10);
-        const priceMaxValue = priceMaxElement ? parseInt(priceMaxElement.textContent.trim().replace(/[^0-9]/g, ''), 10) : null;
+        const priceValue = parseInt(priceElement.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
+        const priceMaxValue = priceMaxElement ? parseInt(priceMaxElement.textContent.trim().replace(/[^0-9.-]+/g, ''), 10) : null;
 
         // Skip cards with negative prices (either min or max)
         if (priceValue < 0 || (priceMaxValue !== null && priceMaxValue < 0)) {
