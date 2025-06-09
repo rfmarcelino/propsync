@@ -1,7 +1,6 @@
 stages:
   - build
   - deploy
-  - pages
 
 variables:
   NODE_VERSION: "18"
@@ -44,6 +43,10 @@ deploy_to_repo:
         git commit -m "CI: Update compressed JavaScript files [skip ci]"
         git push https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git HEAD:${CI_COMMIT_REF_NAME}
         echo "✅ Compressed files updated and pushed"
+        echo "📋 Files available at:"
+        echo "   https://git.omibee.com/products/propsync/-/raw/master/dist/propsync-page-template.js"
+        echo "   https://git.omibee.com/products/propsync/-/raw/master/dist/propsync-list-page-a-b.js"
+        echo "   https://git.omibee.com/products/propsync/-/raw/master/dist/propsync-list-page-c.js"
       else
         echo "✅ No changes in compressed files"
       fi
@@ -51,18 +54,4 @@ deploy_to_repo:
     - master
     - main
 
-pages:
-  stage: pages
-  dependencies:
-    - build_scripts
-  script:
-    - mkdir public
-    - cp -r dist/* public/
-    - echo "Files deployed to GitLab Pages"
-    - ls -la public/
-  artifacts:
-    paths:
-      - public
-  only:
-    - master
-    - main
+
