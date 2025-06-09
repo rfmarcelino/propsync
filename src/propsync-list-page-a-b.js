@@ -88,13 +88,13 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const formatCurrency = (value) => {
-    // Simple formatting, ensure it returns a string
-    return '$' + Math.round(value).toString(); // Add $ sign back
+    // Format with commas: 2400 → 2,400
+    return '$' + Math.round(value).toLocaleString();
   }
 
   const formatSqft = (value) => {
-    // Simple formatting, ensure it returns a string
-    return Math.round(value).toString(); // No $ sign
+    // Format with commas: 1200 → 1,200
+    return Math.round(value).toLocaleString();
   }
 
   // --- Initialization ---
@@ -157,6 +157,14 @@ document.addEventListener('DOMContentLoaded', () => {
           sqrMin: sqrMin,
           sqrMax: sqrMax,
         };
+
+        // Filter out cards with negative prices
+        if (priceMin !== null && priceMin < 0) {
+          console.log(`Hiding card with negative price: ${priceMin}`);
+          card.style.display = 'none';
+          return; // Skip adding to initialCardData
+        }
+
         initialCardData.push(cardData);
 
         // Update overall ranges and available bedrooms
@@ -523,6 +531,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Process each card-wrapper individually
   cardWrappers.forEach(function (wrapper) {
+    // Format prices with commas
+    const priceElements = wrapper.querySelectorAll('.price-min-card-value, .price-max-card-value');
+    priceElements.forEach(priceEl => {
+      const price = parseVal(wrapper, '.' + priceEl.className.split(' ')[0]);
+      if (price !== null && price >= 0) {
+        priceEl.textContent = Math.round(price).toLocaleString();
+      }
+    });
+
+    // Format square footage with commas
+    const sqrElements = wrapper.querySelectorAll('.sqr-min-card-value, .sqr-max-card-value');
+    sqrElements.forEach(sqrEl => {
+      const sqr = parseVal(wrapper, '.' + sqrEl.className.split(' ')[0]);
+      if (sqr !== null) {
+        sqrEl.textContent = Math.round(sqr).toLocaleString();
+      }
+    });
+
     // Square footage comparison
     const sqrMinValue = wrapper.querySelector('.sqr-min-card-value');
     const sqrMaxValue = wrapper.querySelector('.sqr-max-card-value');

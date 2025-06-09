@@ -34,9 +34,9 @@
   const floorType = getFloorTypeName(bedValue);
   const numericBedValue = parseInt(bedValue, 10); // Keep numeric value for sorting
 
-  if (isNaN(priceValue)) {
-    console.warn("Could not parse price for a card in type:", floorType, card);
-  return; // Skip card if price is invalid
+  if (isNaN(priceValue) || priceValue < 0) {
+    console.warn("Skipping card with invalid or negative price:", priceValue, "for type:", floorType, card);
+  return; // Skip card if price is invalid or negative
             }
 
   if (!floorPlanGroups[floorType]) {
@@ -83,7 +83,8 @@
             }
 
   // --- Update Title ---
-  const title = `${floorType} Starting at $${group.minPrice} -- Number of ${group.cards.length} Floorplans`;
+  const formattedPrice = group.minPrice.toLocaleString();
+  const title = `${floorType} Starting at $${formattedPrice} -- Number of ${group.cards.length} Floorplans`;
   titleTextElement.textContent = title;
   // Update the simpler title too if needed
   const simpleTitleElement = newAccordion.querySelector('.bedroom-text');
@@ -142,8 +143,36 @@
   // Get all card-wrapper elements
   const cardWrappers = document.querySelectorAll('.card-wrapper');
 
+  // Helper function for parsing values
+  const parseVal = (el, selector) => {
+    const target = el.querySelector(selector);
+    if (!target || !target.textContent) return null;
+    const value = target.textContent.trim().replace(/[^0-9.]+/g, '');
+    if (value === '') return null;
+    const num = parseInt(value, 10);
+    return isNaN(num) ? null : num;
+  };
+
   // Process each card-wrapper individually
   cardWrappers.forEach(function(wrapper) {
+    // Format prices with commas
+    const priceElements = wrapper.querySelectorAll('.price-min-card-value, .price-max-card-value');
+    priceElements.forEach(priceEl => {
+      const price = parseVal(wrapper, '.' + priceEl.className.split(' ')[0]);
+      if (price !== null && price >= 0) {
+        priceEl.textContent = Math.round(price).toLocaleString();
+      }
+    });
+
+    // Format square footage with commas
+    const sqrElements = wrapper.querySelectorAll('.sqr-min-card-value, .sqr-max-card-value');
+    sqrElements.forEach(sqrEl => {
+      const sqr = parseVal(wrapper, '.' + sqrEl.className.split(' ')[0]);
+      if (sqr !== null) {
+        sqrEl.textContent = Math.round(sqr).toLocaleString();
+      }
+    });
+
     // Square footage comparison
     const sqrMinValue = wrapper.querySelector('.sqr-min-card-value');
   const sqrMaxValue = wrapper.querySelector('.sqr-max-card-value');

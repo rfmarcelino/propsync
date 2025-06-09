@@ -1,10 +1,38 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // --- Helper Functions ---
+  const parseVal = (el, selector) => {
+    const target = el.querySelector(selector);
+    if (!target || !target.textContent) return null;
+    const value = target.textContent.trim().replace(/[^0-9.]+/g, '');
+    if (value === '') return null;
+    const num = parseInt(value, 10);
+    return isNaN(num) ? null : num;
+  };
+
   // --- Check availability link ---
   const applyButtons = document.querySelectorAll('[applylink]');
   applyButtons.forEach(function (button) {
     const linkValue = button.getAttribute('applylink');
     if (linkValue) {
       button.setAttribute('href', linkValue);
+    }
+  });
+
+  // --- Format prices with commas ---
+  const priceElements = document.querySelectorAll('.price-min-card-value, .price-max-card-value');
+  priceElements.forEach(priceEl => {
+    const price = parseVal(document, '.' + priceEl.className.split(' ')[0]);
+    if (price !== null && price >= 0) {
+      priceEl.textContent = Math.round(price).toLocaleString();
+    }
+  });
+
+  // --- Format square footage with commas ---
+  const sqrElements = document.querySelectorAll('.sqr-min-card-value, .sqr-max-card-value');
+  sqrElements.forEach(sqrEl => {
+    const sqr = parseVal(document, '.' + sqrEl.className.split(' ')[0]);
+    if (sqr !== null) {
+      sqrEl.textContent = Math.round(sqr).toLocaleString();
     }
   });
   // Square footage comparison
