@@ -163,8 +163,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const sqrMin = parseVal(card, '.sqr-min-card-value');
       const sqrMax = parseVal(card, '.sqr-max-card-value');
 
-      // Hide cards with negative minimum price
-      if (priceMin !== null && priceMin < 0) {
+      // Hide cards with negative prices (either min or max)
+      if ((priceMin !== null && priceMin < 0) || (priceMax !== null && priceMax < 0)) {
         card.style.display = 'none';
         return;
       }
@@ -487,13 +487,15 @@ document.addEventListener('DOMContentLoaded', () => {
     allCardWrappers.forEach(card => {
       const bedElement = card.querySelector('.bedroom-card-value');
       const priceElement = card.querySelector('.price-min-card-value');
+      const priceMaxElement = card.querySelector('.price-max-card-value');
 
       if (bedElement && priceElement) {
         const bedValue = bedElement.textContent.trim();
         const priceValue = parseInt(priceElement.textContent.trim().replace(/[^0-9]/g, ''), 10);
+        const priceMaxValue = priceMaxElement ? parseInt(priceMaxElement.textContent.trim().replace(/[^0-9]/g, ''), 10) : null;
 
-        // Skip cards with negative prices
-        if (priceValue < 0) {
+        // Skip cards with negative prices (either min or max)
+        if (priceValue < 0 || (priceMaxValue !== null && priceMaxValue < 0)) {
           card.style.display = 'none';
           return;
         }
