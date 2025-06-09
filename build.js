@@ -67,7 +67,8 @@ async function buildAll() {
   }
 
   console.log(`\nBuild complete! ${files.length} files processed.`);
-  console.log(`Files available at: https://git.omibee.com/products/propsync/-/raw/master/dist/`);
+  console.log('Files available via jsDelivr CDN:');
+  console.log('https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/');
 }
 
 if (process.argv.includes('--watch')) {
