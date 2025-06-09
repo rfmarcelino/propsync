@@ -1,6 +1,7 @@
 stages:
   - build
   - deploy
+  - pages
 
 variables:
   NODE_VERSION: "18"
@@ -46,6 +47,22 @@ deploy_to_repo:
       else
         echo "✅ No changes in compressed files"
       fi
+  only:
+    - master
+    - main
+
+pages:
+  stage: pages
+  dependencies:
+    - build_scripts
+  script:
+    - mkdir public
+    - cp -r dist/* public/
+    - echo "Files deployed to GitLab Pages"
+    - ls -la public/
+  artifacts:
+    paths:
+      - public
   only:
     - master
     - main

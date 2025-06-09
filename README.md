@@ -10,13 +10,13 @@ Add these script tags to your pages **before the closing `</body>` tag**:
 
 ```html
 <!-- For Page Template (Floor Plans A, B, C and PropSync Floor Plans Template) -->
-<script src="https://git.omibee.com/products/propsync/-/raw/master/dist/propsync-page-template.js"></script>
+<script src="https://products.pages.omibee.com/propsync/propsync-page-template.js"></script>
 
 <!-- For List Pages A & B (with filtering) -->
-<script src="https://git.omibee.com/products/propsync/-/raw/master/dist/propsync-list-page-a-b.js"></script>
+<script src="https://products.pages.omibee.com/propsync/propsync-list-page-a-b.js"></script>
 
 <!-- For List Page C (with accordion) -->
-<script src="https://git.omibee.com/products/propsync/-/raw/master/dist/propsync-list-page-c.js"></script>
+<script src="https://products.pages.omibee.com/propsync/propsync-list-page-c.js"></script>
 ```
 
 ## 📁 File Structure
@@ -31,17 +31,30 @@ dist/                   # Built files (compressed, ~60% smaller)
 ├── propsync-page-template.js
 ├── propsync-list-page-a-b.js
 └── propsync-list-page-c.js
+
+public/                 # GitLab Pages deployment (auto-generated)
+├── propsync-page-template.js
+├── propsync-list-page-a-b.js
+└── propsync-list-page-c.js
 ```
+
+## 🌐 GitLab Pages CDN Benefits
+
+- **Global CDN**: Files served from edge locations worldwide
+- **HTTPS**: Secure delivery by default
+- **Caching**: Automatic browser and CDN caching
+- **High Availability**: 99.9% uptime guarantee
+- **Fast**: Optimized for static file delivery
 
 ## 🛠 Development
 
-### Automated Building (GitLab CI)
+### Automated Building (GitLab CI + Pages)
 The build process is **fully automated**! When you push changes to `src/` files:
 
 1. **GitLab CI** automatically runs `npm run build`
 2. **Compressed files** are generated in `dist/`
-3. **Files are committed** back to the repository
-4. **CDN links** are immediately updated
+3. **Files are deployed** to GitLab Pages CDN
+4. **CDN links** are immediately updated and cached globally
 
 ### Local Development
 ```bash
@@ -66,8 +79,8 @@ npm run build        # Build once (manual)
 ### For Developers
 1. **Edit** files in `src/` directory
 2. **Push** to master/main branch
-3. **GitLab CI** automatically builds and updates `dist/`
-4. **CDN links** are immediately available
+3. **GitLab CI** automatically builds and deploys to Pages
+4. **CDN links** are immediately available globally
 
 ### For Local Development
 1. **Clone** the repository
