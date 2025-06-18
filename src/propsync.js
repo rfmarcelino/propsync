@@ -30,11 +30,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- Format All Price Elements ---
+  // --- Format All Price and Square Footage Elements ---
   const formatPriceElements = () => {
     const priceSelectors = ['.price-min', '.price-max', '.price-min-card-value', '.price-max-card-value'];
 
     priceSelectors.forEach(selector => {
+      document.querySelectorAll(selector).forEach(element => {
+        const value = parseVal(element.parentElement, selector);
+        if (value !== null && value >= 0) {
+          element.textContent = formatNumber(value);
+        }
+      });
+    });
+  };
+
+  // --- Format All Square Footage Elements ---
+  const formatSquareFootageElements = () => {
+    const sqrSelectors = ['.sqr-min', '.sqr-max', '.sqr-min-card-value', '.sqr-max-card-value'];
+
+    sqrSelectors.forEach(selector => {
       document.querySelectorAll(selector).forEach(element => {
         const value = parseVal(element.parentElement, selector);
         if (value !== null && value >= 0) {
@@ -626,6 +640,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Initialize All Functionality ---
   formatPriceElements();
+  formatSquareFootageElements();
   initPageTemplate();
   initListPageFiltering();
   initAccordionFunctionality();
