@@ -36,6 +36,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     priceSelectors.forEach(selector => {
       document.querySelectorAll(selector).forEach(element => {
+        // Skip if already formatted (contains $ or commas)
+        if (element.textContent.includes('$') || element.textContent.includes(',')) {
+          return;
+        }
+
         const value = parseVal(element.parentElement, selector);
         if (value !== null && value >= 0) {
           element.textContent = formatNumber(value);
@@ -150,10 +155,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- List Page A/B Filtering Functionality ---
   const initListPageFiltering = () => {
     const cards = document.querySelectorAll('.card-wrapper');
-    const filterButton = document.querySelector('.button-filter');
-    const resetButton = document.querySelector('.button-reset');
+    const filterButton = document.querySelector('.button-3[value="Apply"], input[type="submit"][value="Apply"]');
+    const resetButton = document.querySelector('[fs-cmsfilter-element="reset"], .button-3.is-link');
 
-    if (!cards.length || !filterButton || !resetButton) return;
+    if (!cards.length || !filterButton || !resetButton) {
+      console.log('⚠️ PropSync filtering elements missing:', {
+        cards: cards.length,
+        filterButton: !!filterButton,
+        resetButton: !!resetButton
+      });
+      return;
+    }
+
+    console.log('✅ PropSync filtering initialized with', cards.length, 'cards');
 
     const bedroomWrappers = document.querySelectorAll('.bedroom-wrapper');
     const bedroomCheckboxes = document.querySelectorAll('.bedroom-wrapper input[type="checkbox"]');
@@ -169,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const availableBedrooms = new Set();
     const initialCardData = [];
 
-    // Initialize card data and filter out cards with negative prices
+    // Initialize card data and mark cards with negative prices as sold out
     cards.forEach((card) => {
       const bed = parseVal(card, '.bedroom-card-value');
       const priceMin = parseVal(card, '.price-min-card-value');
@@ -177,10 +191,24 @@ document.addEventListener('DOMContentLoaded', () => {
       const sqrMin = parseVal(card, '.sqr-min-card-value');
       const sqrMax = parseVal(card, '.sqr-max-card-value');
 
-      // Hide cards with negative prices (either min or max)
+      // Mark cards with negative prices as sold out
       if ((priceMin !== null && priceMin < 0) || (priceMax !== null && priceMax < 0)) {
-        card.style.display = 'none';
-        return;
+        const priceSection = card.querySelector('.price-section, .price-wrapper, .card-info');
+        if (priceSection) {
+          const priceElements = priceSection.querySelectorAll('.price-min-card-value, .price-max-card-value, .price-spacer, .price-min-dollar, .price-max-dollar, .startingat');
+          priceElements.forEach(el => el.style.display = 'none');
+
+          // Create or update sold out message
+          let soldOutEl = priceSection.querySelector('.sold-out-message');
+          if (!soldOutEl) {
+            soldOutEl = document.createElement('div');
+            soldOutEl.className = 'sold-out-message';
+            soldOutEl.style.cssText = 'font-weight: 600; color: #999;';
+            priceSection.appendChild(soldOutEl);
+          }
+          soldOutEl.textContent = 'Sold Out';
+        }
+        // Don't return - continue processing the card
       }
 
       const cardData = {
@@ -214,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const rangeBar = container.querySelector(`.${sliderName}-range-bar`);
       const minDisplay = container.querySelector(`.${sliderName}-min`);
       const maxDisplay = container.querySelector(`.${sliderName}-max`);
-      const track = minHandle?.closest('.rangeslider_track');
+      const track = minHandle?.closest('.filters1_rangeslider2-track, .rangeslider_track');
 
       if (!minHandle || !maxHandle || !rangeBar || !minDisplay || !maxDisplay || !track) return;
 
@@ -497,7 +525,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return `${num} Bedroom`;
     };
 
-    // Group cards and filter out negative prices
+    // Group cards and mark negative prices as sold out
     allCardWrappers.forEach(card => {
       const bedElement = card.querySelector('.bedroom-card-value');
       const priceElement = card.querySelector('.price-min-card-value');
@@ -508,10 +536,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const priceValue = parseInt(priceElement.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
         const priceMaxValue = priceMaxElement ? parseInt(priceMaxElement.textContent.trim().replace(/[^0-9.-]+/g, ''), 10) : null;
 
-        // Skip cards with negative prices (either min or max)
+        // Mark cards with negative prices as sold out
         if (priceValue < 0 || (priceMaxValue !== null && priceMaxValue < 0)) {
-          card.style.display = 'none';
-          return;
+          const priceSection = card.querySelector('.price-section, .price-wrapper, .card-info');
+          if (priceSection) {
+            const priceElements = priceSection.querySelectorAll('.price-min-card-value, .price-max-card-value, .price-spacer, .price-min-dollar, .price-max-dollar, .startingat');
+            priceElements.forEach(el => el.style.display = 'none');
+
+            // Create or update sold out message
+            let soldOutEl = priceSection.querySelector('.sold-out-message');
+            if (!soldOutEl) {
+              soldOutEl = document.createElement('div');
+              soldOutEl.className = 'sold-out-message';
+              soldOutEl.style.cssText = 'font-weight: 600; color: #999;';
+              priceSection.appendChild(soldOutEl);
+            }
+            soldOutEl.textContent = 'Sold Out';
+          }
+          // Don't return - continue processing the card
         }
 
         const floorType = getFloorTypeName(bedValue);
