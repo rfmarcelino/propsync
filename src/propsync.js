@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if ((priceMin !== null && priceMin < 0) || (priceMax !== null && priceMax < 0)) {
         const priceContainer = card.querySelector('.price-range');
         if (priceContainer) {
-          // Hide all price-related elements
+          // Hide all price-related elements including "Starting at"
           const priceElements = priceContainer.querySelectorAll('.price-min-card-value, .price-max-card-value, .price-spacer, .price-max-dollar, .startingat');
           priceElements.forEach(el => el.style.display = 'none');
 
@@ -570,7 +570,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         floorPlanGroups[floorType].cards.push(card);
-        floorPlanGroups[floorType].minPrice = Math.min(floorPlanGroups[floorType].minPrice, priceValue);
+        // Only include positive prices in min price calculation
+        if (priceValue >= 0) {
+          floorPlanGroups[floorType].minPrice = Math.min(floorPlanGroups[floorType].minPrice, priceValue);
+        }
       }
     });
 
@@ -592,7 +595,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!question || !answer || !titleTextElement || !cardList) return;
 
-        const title = `${floorType} Starting at ${formatCurrency(group.minPrice)} -- Number of ${group.cards.length} Floorplans`;
+        // Build title based on whether there are available units
+        let title;
+        if (group.minPrice === Infinity) {
+          // All cards are sold out
+          title = `${floorType} -- Number of ${group.cards.length} Floorplans`;
+        } else {
+          title = `${floorType} Starting at ${formatCurrency(group.minPrice)} -- Number of ${group.cards.length} Floorplans`;
+        }
         titleTextElement.textContent = title;
 
         const simpleTitleElement = newAccordion.querySelector('.bedroom-text');

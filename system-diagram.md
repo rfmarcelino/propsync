@@ -23,7 +23,7 @@ graph TB
             CheckAvail[Check Price Availability]
             KeepVisible[Keep Floor Plan Visible]
             ShowSoldOut[Display 'Sold Out' Message]
-            HidePriceEls[Hide Price Elements]
+            HidePriceEls[Hide Price & Starting At Elements]
         end
 
         subgraph FilterSystem["Filtering System"]
@@ -37,9 +37,10 @@ graph TB
 
         subgraph AccordionSys["Accordion System"]
             GroupCards[Group by Bedroom Type]
-            CalcMinPrice[Calculate Min Price per Group]
+            CalcMinPrice[Calculate Min Price - Exclude Sold Out]
             RenderAccordion[Render Accordion Items]
             ToggleAccordion[Toggle Accordion State]
+            HideStartingPrice[Hide Starting Price if All Sold Out]
         end
     end
 
@@ -72,7 +73,8 @@ graph TB
     Accordion --> AccordionSys
     AccordionSys --> GroupCards
     GroupCards --> CalcMinPrice
-    CalcMinPrice --> RenderAccordion
+    CalcMinPrice --> HideStartingPrice
+    HideStartingPrice --> RenderAccordion
     RenderAccordion --> ToggleAccordion
     AccordionSys --> FloorPlan
 
