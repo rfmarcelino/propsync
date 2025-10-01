@@ -155,17 +155,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- List Page A/B Filtering Functionality ---
   const initListPageFiltering = () => {
     const cards = document.querySelectorAll('.card-wrapper');
-    const filterButton = document.querySelector('.button-3[value="Apply"], input[type="submit"][value="Apply"]');
-    const resetButton = document.querySelector('[fs-cmsfilter-element="reset"], .button-3.is-link');
-
-    if (!cards.length || !filterButton || !resetButton) {
-      console.log('⚠️ PropSync filtering elements missing:', {
-        cards: cards.length,
-        filterButton: !!filterButton,
-        resetButton: !!resetButton
-      });
-      return;
-    }
+    const filterButton = document.querySelector('.button-filter');
+    const resetButton = document.querySelector('.button-reset');
+    if (!cards.length || !filterButton || !resetButton) return;
 
     console.log('✅ PropSync filtering initialized with', cards.length, 'cards');
 
@@ -193,18 +185,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Mark cards with negative prices as sold out
       if ((priceMin !== null && priceMin < 0) || (priceMax !== null && priceMax < 0)) {
-        const priceSection = card.querySelector('.price-section, .price-wrapper, .card-info');
-        if (priceSection) {
-          const priceElements = priceSection.querySelectorAll('.price-min-card-value, .price-max-card-value, .price-spacer, .price-min-dollar, .price-max-dollar, .startingat');
+        const priceContainer = card.querySelector('.price-range');
+        if (priceContainer) {
+          // Hide all price-related elements
+          const priceElements = priceContainer.querySelectorAll('.price-min-card-value, .price-max-card-value, .price-spacer, .price-max-dollar, .startingat');
           priceElements.forEach(el => el.style.display = 'none');
 
+          // Hide the dollar sign (standalone .price element)
+          const dollarSign = priceContainer.querySelector('.price:not(.price-min-card-value):not(.price-max-card-value):not(.price-spacer):not(.price-max-dollar)');
+          if (dollarSign) dollarSign.style.display = 'none';
+
           // Create or update sold out message
-          let soldOutEl = priceSection.querySelector('.sold-out-message');
+          let soldOutEl = priceContainer.querySelector('.sold-out-message');
           if (!soldOutEl) {
             soldOutEl = document.createElement('div');
-            soldOutEl.className = 'sold-out-message';
-            soldOutEl.style.cssText = 'font-weight: 600; color: #999;';
-            priceSection.appendChild(soldOutEl);
+            soldOutEl.className = 'price sold-out-message';
+            priceContainer.appendChild(soldOutEl);
           }
           soldOutEl.textContent = 'Sold Out';
         }
@@ -538,18 +534,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Mark cards with negative prices as sold out
         if (priceValue < 0 || (priceMaxValue !== null && priceMaxValue < 0)) {
-          const priceSection = card.querySelector('.price-section, .price-wrapper, .card-info');
-          if (priceSection) {
-            const priceElements = priceSection.querySelectorAll('.price-min-card-value, .price-max-card-value, .price-spacer, .price-min-dollar, .price-max-dollar, .startingat');
+          const priceContainer = card.querySelector('.price-range');
+          if (priceContainer) {
+            // Hide all price-related elements
+            const priceElements = priceContainer.querySelectorAll('.price-min-card-value, .price-max-card-value, .price-spacer, .price-max-dollar, .startingat');
             priceElements.forEach(el => el.style.display = 'none');
 
+            // Hide the dollar sign (standalone .price element)
+            const dollarSign = priceContainer.querySelector('.price:not(.price-min-card-value):not(.price-max-card-value):not(.price-spacer):not(.price-max-dollar)');
+            if (dollarSign) dollarSign.style.display = 'none';
+
             // Create or update sold out message
-            let soldOutEl = priceSection.querySelector('.sold-out-message');
+            let soldOutEl = priceContainer.querySelector('.sold-out-message');
             if (!soldOutEl) {
               soldOutEl = document.createElement('div');
-              soldOutEl.className = 'sold-out-message';
-              soldOutEl.style.cssText = 'font-weight: 600; color: #999;';
-              priceSection.appendChild(soldOutEl);
+              soldOutEl.className = 'price sold-out-message';
+              priceContainer.appendChild(soldOutEl);
             }
             soldOutEl.textContent = 'Sold Out';
           }
