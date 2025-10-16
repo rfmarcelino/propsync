@@ -1,4 +1,3 @@
-```mermaid
 graph TB
     subgraph PropSync["PropSync - Property Sync System"]
         Init[DOMContentLoaded Event]
@@ -7,6 +6,8 @@ graph TB
             FormatNum[formatNumber]
             FormatCurr[formatCurrency]
             ParseVal[parseVal]
+            MarkSoldOut[markPriceContainerAsSoldOut]
+            ProcessAvail[processAvailabilityWrapper]
         end
 
         subgraph Features["Core Features"]
@@ -26,6 +27,12 @@ graph TB
             HidePriceEls[Hide Price & Starting At Elements]
         end
 
+        subgraph AvailabilityDisplay["Availability Display Logic"]
+            CheckAvailCount["Check Item Count<br/>(0, 1-9, 10+)"]
+            ShowSoldOutAvail["If 0: Replace with 'Sold Out'<br/>Hide available-text"]
+            Show9Plus["If >9: Replace with '9+'"]
+        end
+
         subgraph FilterSystem["Filtering System"]
             BedroomFilter[Bedroom Filter]
             PriceSlider[Price Range Slider]
@@ -33,6 +40,7 @@ graph TB
             ApplyBtn[Apply Button]
             ResetBtn[Reset Button]
             ResultCount[Results Counter]
+            ItemsSummary["Items Summary<br/>- results-count: Total Before Filter<br/>- items-count: After Filter"]
         end
 
         subgraph AccordionSys["Accordion System"]
@@ -68,7 +76,9 @@ graph TB
     FilterSystem --> PriceSlider
     FilterSystem --> SqrSlider
     ApplyBtn --> ResultCount
+    ApplyBtn --> ItemsSummary
     ResetBtn --> ResultCount
+    ResetBtn --> ItemsSummary
 
     Accordion --> AccordionSys
     AccordionSys --> GroupCards
@@ -82,7 +92,10 @@ graph TB
     PageTemplate --> FormatSqr
     CardComp --> FormatPrice
     CardComp --> FormatSqr
-```
+    CardComp --> AvailabilityDisplay
+    ListFilter --> AvailabilityDisplay
+    Accordion --> AvailabilityDisplay
 
-
-
+    AvailabilityDisplay --> CheckAvailCount
+    CheckAvailCount -->|0| ShowSoldOutAvail
+    CheckAvailCount -->|>9| Show9Plus

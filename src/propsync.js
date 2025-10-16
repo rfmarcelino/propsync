@@ -21,6 +21,57 @@ document.addEventListener('DOMContentLoaded', () => {
     return isNaN(num) ? null : num;
   };
 
+  const markPriceContainerAsSoldOut = (priceContainer) => {
+    if (!priceContainer) return;
+
+    // Find all price elements within the container
+    const priceMinValue = priceContainer.querySelector('.price-min-card-value');
+    const priceMaxValue = priceContainer.querySelector('.price-max-card-value');
+    const minDollar = priceContainer.querySelector('.price-min-dollar');
+    const maxDollar = priceContainer.querySelector('.price-max-dollar');
+    const spacer = priceContainer.querySelector('.price-spacer');
+    const startingAt = priceContainer.querySelector('.w-condition-invisible');
+    const startingAtClass = priceContainer.querySelector('.startingat');
+
+    // Hide dollar signs, spacer, max price, and "Starting at" text
+    [minDollar, maxDollar, spacer, startingAt, startingAtClass, priceMaxValue].forEach(el => {
+      if (el) el.style.display = 'none';
+    });
+
+    // Replace price min value with "Sold Out"
+    if (priceMinValue) {
+      priceMinValue.textContent = 'Sold Out';
+      priceMinValue.style.display = '';  // Make sure it's visible
+    }
+  };
+
+  const processAvailabilityWrapper = (container) => {
+    if (!container) return;
+
+    const availabilityWrapper = container.querySelector('.availability-wrapper');
+    if (!availabilityWrapper) return;
+
+    const availableItems = availabilityWrapper.querySelector('.available-items');
+    const availableText = availabilityWrapper.querySelector('.available-text');
+
+    if (!availableItems) return;
+
+    const itemCount = parseInt(availableItems.textContent.trim(), 10);
+
+    if (isNaN(itemCount)) return;
+
+    if (itemCount === 0) {
+      // Replace with "Sold Out" and hide available-text
+      availableItems.textContent = 'Sold Out';
+      if (availableText) {
+        availableText.style.display = 'none';
+      }
+    } else if (itemCount > 9) {
+      // Replace with "9+"
+      availableItems.textContent = '9+';
+    }
+  };
+
   // --- Apply Links ---
   const applyButtons = document.querySelectorAll('[applylink]');
   applyButtons.forEach(function (button) {
@@ -166,6 +217,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const priceRangeContainer = document.querySelector('.price-range');
     const sqrRangeContainer = document.querySelector('.sqr-range');
     const resultsCountEl = document.querySelector('[fs-cmsfilter-element="results-count"]');
+    const itemsSummaryEl = document.querySelector('.items-summary');
+    const itemsCountEl = itemsSummaryEl?.querySelector('.items-count');
+    const resultCountSummaryEl = itemsSummaryEl?.querySelector('.results-count');
 
     let isAnySliderDragging = false;
     let overallMinPrice = Infinity;
@@ -186,24 +240,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // Mark cards with negative prices as sold out
       if ((priceMin !== null && priceMin < 0) || (priceMax !== null && priceMax < 0)) {
         const priceContainer = card.querySelector('.price-range');
-        if (priceContainer) {
-          // Hide all price-related elements including "Starting at"
-          const priceElements = priceContainer.querySelectorAll('.price-min-card-value, .price-max-card-value, .price-spacer, .price-max-dollar, .startingat');
-          priceElements.forEach(el => el.style.display = 'none');
-
-          // Hide the dollar sign (standalone .price element)
-          const dollarSign = priceContainer.querySelector('.price:not(.price-min-card-value):not(.price-max-card-value):not(.price-spacer):not(.price-max-dollar)');
-          if (dollarSign) dollarSign.style.display = 'none';
-
-          // Create or update sold out message
-          let soldOutEl = priceContainer.querySelector('.sold-out-message');
-          if (!soldOutEl) {
-            soldOutEl = document.createElement('div');
-            soldOutEl.className = 'price sold-out-message';
-            priceContainer.appendChild(soldOutEl);
-          }
-          soldOutEl.textContent = 'Sold Out';
-        }
+        markPriceContainerAsSoldOut(priceContainer || card);
+        // Process availability wrapper for this card
+        processAvailabilityWrapper(card);
         // Don't return - continue processing the card
       }
 
@@ -222,6 +261,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cardData.priceMax !== null) overallMaxPrice = Math.max(overallMaxPrice, cardData.priceMax);
       if (cardData.sqrMin !== null) overallMinSqr = Math.min(overallMinSqr, cardData.sqrMin);
       if (cardData.sqrMax !== null) overallMaxSqr = Math.max(overallMaxSqr, cardData.sqrMax);
+
+      // Process availability wrapper for this card
+      processAvailabilityWrapper(card);
     });
 
     if (overallMinPrice === Infinity) overallMinPrice = 0;
@@ -439,6 +481,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (resultsCountEl) {
         resultsCountEl.textContent = visibleCount;
       }
+      if (itemsCountEl) {
+        itemsCountEl.textContent = visibleCount;
+      }
+      if (resultCountSummaryEl) {
+        resultCountSummaryEl.textContent = initialCardData.length;
+      }
     };
 
     const resetFilters = () => {
@@ -485,6 +533,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (resultsCountEl) {
         resultsCountEl.textContent = initialCardData.length;
       }
+      if (itemsCountEl) {
+        itemsCountEl.textContent = initialCardData.length;
+      }
+      if (resultCountSummaryEl) {
+        resultCountSummaryEl.textContent = initialCardData.length;
+      }
     };
 
     filterButton.addEventListener('click', (e) => {
@@ -500,6 +554,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial count
     if (resultsCountEl) {
       resultsCountEl.textContent = initialCardData.length;
+    }
+    if (itemsCountEl) {
+      itemsCountEl.textContent = initialCardData.length;
+    }
+    if (resultCountSummaryEl) {
+      resultCountSummaryEl.textContent = initialCardData.length;
     }
   };
 
@@ -535,26 +595,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Mark cards with negative prices as sold out
         if (priceValue < 0 || (priceMaxValue !== null && priceMaxValue < 0)) {
           const priceContainer = card.querySelector('.price-range');
-          if (priceContainer) {
-            // Hide all price-related elements
-            const priceElements = priceContainer.querySelectorAll('.price-min-card-value, .price-max-card-value, .price-spacer, .price-max-dollar, .startingat');
-            priceElements.forEach(el => el.style.display = 'none');
-
-            // Hide the dollar sign (standalone .price element)
-            const dollarSign = priceContainer.querySelector('.price:not(.price-min-card-value):not(.price-max-card-value):not(.price-spacer):not(.price-max-dollar)');
-            if (dollarSign) dollarSign.style.display = 'none';
-
-            // Create or update sold out message
-            let soldOutEl = priceContainer.querySelector('.sold-out-message');
-            if (!soldOutEl) {
-              soldOutEl = document.createElement('div');
-              soldOutEl.className = 'price sold-out-message';
-              priceContainer.appendChild(soldOutEl);
-            }
-            soldOutEl.textContent = 'Sold Out';
-          }
+          markPriceContainerAsSoldOut(priceContainer || card);
           // Don't return - continue processing the card
         }
+
+        // Process availability wrapper for this card
+        processAvailabilityWrapper(card);
 
         const floorType = getFloorTypeName(bedValue);
         const numericBedValue = parseInt(bedValue, 10);
@@ -654,6 +700,25 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Card Price/Square Footage Comparison ---
   const initCardComparisons = () => {
     document.querySelectorAll('.card-wrapper').forEach(wrapper => {
+      // Check for negative prices first and mark as sold out
+      const priceMinValue = wrapper.querySelector('.price-min-card-value');
+      const priceMaxValue = wrapper.querySelector('.price-max-card-value');
+      const priceContainer = wrapper.querySelector('.price-range');
+
+      if (priceMinValue && priceMaxValue) {
+        const priceMinNum = parseInt(priceMinValue.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
+        const priceMaxNum = parseInt(priceMaxValue.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
+
+        if ((priceMinNum < 0) || (priceMaxNum < 0)) {
+          // Try to find price container, fallback to wrapper
+          const container = priceContainer || wrapper;
+          markPriceContainerAsSoldOut(container);
+          // Process availability wrapper even when price is negative
+          processAvailabilityWrapper(wrapper);
+          return; // Skip further processing for this card
+        }
+      }
+
       // Square footage comparison
       const sqrMinValue = wrapper.querySelector('.sqr-min-card-value');
       const sqrMaxValue = wrapper.querySelector('.sqr-max-card-value');
@@ -667,8 +732,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Price comparison
-      const priceMinValue = wrapper.querySelector('.price-min-card-value');
-      const priceMaxValue = wrapper.querySelector('.price-max-card-value');
       const priceSpacer = wrapper.querySelector('.price-spacer');
       const priceMaxDollar = wrapper.querySelector('.price-max-dollar');
       const startingAt = wrapper.querySelector('.startingat');
@@ -687,6 +750,9 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       }
+
+      // Process availability wrapper
+      processAvailabilityWrapper(wrapper);
     });
   };
 
