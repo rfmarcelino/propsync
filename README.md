@@ -57,9 +57,19 @@ npm run build        # Build once (manual)
 - `.price-range` → `.price-min-handler`, `.price-max-handler`, `.price-range-bar`, `.price-min`, `.price-max`
 - `.sqr-range` → `.sqr-min-handler`, `.sqr-max-handler`, `.sqr-range-bar`, `.sqr-min`, `.sqr-max`
 - `.button-filter`, `.button-reset`
+- `.items-summary` → `.results-count` (total before filter), `.items-count` (after filter)
 
 **For All Page Types (cards):**
 - `.card-wrapper` → `.bedroom-card-value`, `.bathroom-card-value`, `.sqr-min-card-value`, `.sqr-spacer`, `.sqr-max-card-value`, `.startingat`, `.price-min-dollar`, `.price-min-card-value`, `.price-spacer`, `.price-max-dollar`, `.price-max-card-value`
+
+**For Availability Display (optional, for any card):**
+- `.availability-wrapper` → `.available-items` (count), `.available-text` (label), `.available-sold-out` (sold out text)
+  - If `.available-items` = 0: Shows `.available-sold-out`, hides others
+  - If `.available-items` > 9: Replaces with "9+", shows `.available-text`
+  - If `.available-items` = 1-9: Shows count and `.available-text`, hides `.available-sold-out`
+
+**For Price Sold Out Handling:**
+- If `.price-min-card-value` < 0 (e.g., -1): Replaced with "Sold Out", hides dollar signs, spacer, max price, and "Starting at" text
 
 ## 🔄 Workflow
 
