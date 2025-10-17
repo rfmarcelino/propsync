@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const availableItems = availabilityWrapper.querySelector('.available-items');
     const availableText = availabilityWrapper.querySelector('.available-text');
+    const soldOutEl = availabilityWrapper.querySelector('.available-sold-out');
 
     if (!availableItems) return;
 
@@ -61,14 +62,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isNaN(itemCount)) return;
 
     if (itemCount === 0) {
-      // Replace with "Sold Out" and hide available-text
-      availableItems.textContent = 'Sold Out';
+      // Show sold out, hide available items and text
+      availableItems.style.display = 'none';
       if (availableText) {
         availableText.style.display = 'none';
       }
+      if (soldOutEl) {
+        soldOutEl.style.display = '';
+      }
     } else if (itemCount > 9) {
-      // Replace with "9+"
+      // Replace with "9+" and show available text
       availableItems.textContent = '9+';
+      availableItems.style.display = '';
+      if (availableText) {
+        availableText.style.display = '';
+      }
+      if (soldOutEl) {
+        soldOutEl.style.display = 'none';
+      }
+    } else {
+      // Normal case (1-9 items)
+      availableItems.style.display = '';
+      if (availableText) {
+        availableText.style.display = '';
+      }
+      if (soldOutEl) {
+        soldOutEl.style.display = 'none';
+      }
     }
   };
 
