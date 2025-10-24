@@ -228,7 +228,63 @@ document.addEventListener('DOMContentLoaded', () => {
     const cards = document.querySelectorAll('.card-wrapper');
     const filterButton = document.querySelector('.button-filter');
     const resetButton = document.querySelector('.button-reset');
-    if (!cards.length || !filterButton || !resetButton) return;
+
+    // --- Diagnostic: Check for required filter classes (BEFORE early return) ---
+    const requiredClasses = [
+      '.card-wrapper',
+      '.button-filter',
+      '.button-reset',
+      '.bedroom-wrapper',
+      '.bedroom-wrapper input[type="checkbox"]',
+      '.price-range',
+      '.sqr-range',
+      '[fs-cmsfilter-element="results-count"]',
+      '.items-summary',
+      '.items-count',
+      '.results-count',
+      '.bedroom-value',
+      '.bedroom-card-value',
+      '.price-min-card-value',
+      '.price-max-card-value',
+      '.sqr-min-card-value',
+      '.sqr-max-card-value',
+      '.price-min',
+      '.price-max',
+      '.sqr-min',
+      '.sqr-max',
+      '.price-min-handler',
+      '.price-max-handler',
+      '.price-range-bar',
+      '.sqr-min-handler',
+      '.sqr-max-handler',
+      '.sqr-range-bar'
+    ];
+
+    const foundClasses = [];
+    const missingClasses = [];
+
+    requiredClasses.forEach(selector => {
+      const element = document.querySelector(selector);
+      if (element) {
+        foundClasses.push(selector);
+      } else {
+        missingClasses.push(selector);
+      }
+    });
+
+    // Only show diagnostics if classes OTHER than .button-filter are missing
+    // .button-filter is expected to be missing and is handled by auto-submit mode
+    const otherMissingClasses = missingClasses.filter(cls => cls !== '.button-filter');
+
+    if (foundClasses.length >= 2 && otherMissingClasses.length > 0) {
+      console.warn('🔍 PropSync Filter Diagnostics:');
+      console.warn(`   Found ${foundClasses.length}/${requiredClasses.length} required classes`);
+      console.warn('   ❌ Missing required classes:');
+      otherMissingClasses.forEach(cls => console.warn(`      - ${cls}`));
+    }
+
+    // Only require cards to exist - filterButton and resetButton are optional (auto-submit fallback)
+    if (!cards.length) return;
 
     console.log('✅ PropSync filtering initialized with', cards.length, 'cards');
 
@@ -240,6 +296,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemsSummaryEl = document.querySelector('.items-summary');
     const itemsCountEl = itemsSummaryEl?.querySelector('.items-count');
     const resultCountSummaryEl = itemsSummaryEl?.querySelector('.results-count');
+
+    // Define auto-submit mode early so it's available in setupRangeSlider
+    const autoSubmitMode = !filterButton;
+    if (autoSubmitMode) {
+      console.log('📱 Auto-submit mode enabled (button-filter missing)');
+    }
 
     let isAnySliderDragging = false;
     let overallMinPrice = Infinity;
@@ -385,6 +447,11 @@ document.addEventListener('DOMContentLoaded', () => {
           document.removeEventListener('touchmove', onDragging);
           document.removeEventListener('mouseup', onDragEnd);
           document.removeEventListener('touchend', onDragEnd);
+
+          // Trigger auto-apply in auto-submit mode
+          if (autoSubmitMode) {
+            setTimeout(() => applyFilters(), 50);
+          }
         }
       };
 
@@ -561,15 +628,30 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    filterButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      applyFilters();
-    });
+    // Attach filter button listener if it exists
+    if (filterButton) {
+      filterButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        applyFilters();
+      });
+    }
 
-    resetButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      resetFilters();
-    });
+    // Attach reset button listener if it exists
+    if (resetButton) {
+      resetButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        resetFilters();
+      });
+    }
+
+    // Auto-apply when bedroom checkboxes change in auto-submit mode
+    if (autoSubmitMode) {
+      bedroomCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          applyFilters();
+        });
+      });
+    }
 
     // Initial count
     if (resultsCountEl) {

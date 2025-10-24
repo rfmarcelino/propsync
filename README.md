@@ -110,3 +110,68 @@ fetch('https://cdn.jsdelivr.net/gh/rfmarcelino/propsync@master/dist/propsync.js'
   .then(console.log)
   .catch(console.error);
 ```
+
+## 🐛 Debugging - Filter Class Diagnostics
+
+If filtering isn't working, the script will automatically log diagnostics to help identify missing CSS classes.
+
+### What Gets Logged
+When the page loads and if at least **2 filter-related classes are found**, the script checks for missing classes.
+
+**Important:** If the ONLY missing class is `.button-filter`, no warning is shown because:
+- ✅ Auto-submit mode automatically handles this
+- ✅ Filtering will still work perfectly
+- ✅ `.button-filter` is completely optional
+
+The diagnostic only shows warnings if OTHER required classes are missing, which indicates a real configuration issue.
+
+### How to Check
+1. Open browser **Developer Tools** (F12 or Cmd+Option+I)
+2. Go to the **Console** tab
+3. If there are real issues, you'll see `🔍 PropSync Filter Diagnostics:`
+4. Missing classes will be listed with `❌ Missing required classes:`
+
+### Example Output (Actual Problem)
+```
+🔍 PropSync Filter Diagnostics:
+   Found 24/27 required classes
+   ❌ Missing required classes:
+      - .price-min-handler
+      - .price-max-handler
+      - .price-range-bar
+```
+
+### Silent Success Case
+If only `.button-filter` is missing, you'll see:
+```
+✅ PropSync filtering initialized with 3 cards
+📱 Auto-submit mode enabled (button-filter missing)
+```
+
+This means everything is working perfectly with auto-submit enabled!
+
+## ⚡ Auto-Submit Filters (Fallback Mode)
+
+If the **`.button-filter`** button is missing from your page, the script automatically enables **auto-submit mode**.
+
+### How It Works
+Instead of requiring users to click a filter button, filters are applied automatically when:
+- ✅ A bedroom checkbox is checked/unchecked
+- ✅ A price range slider is dragged
+- ✅ A square footage slider is dragged
+
+### When It Activates
+Auto-submit is automatically enabled if:
+1. Filter elements exist on the page (at least 2 required classes found)
+2. The `.button-filter` element is **missing**
+
+### Key Features
+- **Filtering Always Works**: Even without `.button-filter` or `.button-reset` buttons
+- **Bedroom Wrapper Visibility**: Correctly shows/hides bedroom options based on available cards
+- **Immediate Feedback**: Filters apply instantly as users interact with controls
+
+### Console Indicator
+When auto-submit activates, you'll see:
+```
+📱 Auto-submit mode enabled (button-filter missing)
+```

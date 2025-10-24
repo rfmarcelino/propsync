@@ -20,6 +20,13 @@ graph TB
             CardComp[Card Comparisons]
         end
 
+        subgraph Diagnostics["Diagnostic System"]
+            CheckClasses["Check Required<br/>Filter Classes"]
+            ValidateElements["Validate Found vs<br/>Missing Classes"]
+            LogDiagnostics["Log Results if<br/>Found >= 2"]
+            MissingReport["Report Missing<br/>Classes"]
+        end
+
         subgraph FloorPlan["Floor Plan Display Logic"]
             CheckAvail[Check Price Availability]
             KeepVisible[Keep Floor Plan Visible]
@@ -63,8 +70,15 @@ graph TB
     Features --> Accordion
     Features --> CardComp
 
+    ListFilter --> Diagnostics
     ListFilter --> FilterSystem
     ListFilter --> FloorPlan
+
+    Diagnostics --> CheckClasses
+    CheckClasses --> ValidateElements
+    ValidateElements --> LogDiagnostics
+    LogDiagnostics -->|Found >= 2| MissingReport
+    MissingReport --> FilterSystem
 
     FloorPlan --> CheckAvail
     CheckAvail -->|Negative Price| KeepVisible
