@@ -2,6 +2,56 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('🚀 PropSync Unified Script Loaded');
 
   // --- Helper Functions ---
+  const debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeoutWithCleanup(later, wait);
+    };
+  };
+
+  // Event listener tracking for cleanup
+  const eventListeners = [];
+  const trackedIntervals = [];
+  const trackedTimeouts = [];
+
+  const addEventListenerWithCleanup = (element, event, handler, options = false) => {
+    element.addEventListener(event, handler, options);
+    eventListeners.push({ element, event, handler, options });
+  };
+
+  const setIntervalWithCleanup = (handler, timeout) => {
+    const intervalId = setInterval(handler, timeout);
+    trackedIntervals.push(intervalId);
+    return intervalId;
+  };
+
+  const setTimeoutWithCleanup = (handler, timeout) => {
+    const timeoutId = setTimeout(handler, timeout);
+    trackedTimeouts.push(timeoutId);
+    return timeoutId;
+  };
+
+  const cleanup = () => {
+    // Remove all event listeners
+    eventListeners.forEach(({ element, event, handler, options }) => {
+      element.removeEventListener(event, handler, options);
+    });
+    eventListeners.length = 0;
+
+    // Clear all intervals
+    trackedIntervals.forEach(id => clearInterval(id));
+    trackedIntervals.length = 0;
+
+    // Clear all timeouts
+    trackedTimeouts.forEach(id => clearTimeout(id));
+    trackedTimeouts.length = 0;
+  };
+
   const formatNumber = (value) => {
     if (value == null || isNaN(value)) return '';
     return Math.round(value).toLocaleString();
@@ -153,15 +203,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const priceMaxValue = document.querySelector('.price-max-card-value');
     const priceSpacer = document.querySelector('.price-spacer');
     const startingAt = document.querySelector('.startingat');
+    const priceMinDollar = document.querySelector('.price-min-dollar');
+    const priceMaxDollar = document.querySelector('.price-max-dollar');
 
-    if (priceMinValue && priceMaxValue && priceSpacer) {
-      if (priceMinValue.textContent === priceMaxValue.textContent) {
+    if (priceMinValue && priceSpacer) {
+      const minPrice = priceMinValue.textContent.trim();
+      const maxPrice = priceMaxValue ? priceMaxValue.textContent.trim() : null;
+      
+      // If prices are equal OR max price doesn't exist, show "Starting at" format
+      if (!maxPrice || minPrice === maxPrice) {
         priceSpacer.style.display = 'none';
-        priceMaxValue.style.display = 'none';
-
-        if (startingAt) {
-          startingAt.style.display = 'inline';
-        }
+        if (priceMaxValue) priceMaxValue.style.display = 'none';
+        if (priceMaxDollar) priceMaxDollar.style.display = 'none';
+        if (startingAt) startingAt.style.display = 'inline';
+        if (priceMinDollar) priceMinDollar.style.display = 'inline';
+      } else {
+        // Prices are different, hide "Starting at" and show full range
+        if (startingAt) startingAt.style.display = 'none';
+        priceSpacer.style.display = 'inline';
+        if (priceMaxValue) priceMaxValue.style.display = 'inline';
+        if (priceMaxDollar) priceMaxDollar.style.display = 'inline';
+        if (priceMinDollar) priceMinDollar.style.display = 'inline';
       }
     }
 
@@ -191,8 +253,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       startAutoSlide();
-      leftArrow.addEventListener("click", () => moveSlide("left"));
-      rightArrow.addEventListener("click", () => moveSlide("right"));
+      addEventListenerWithCleanup(leftArrow, "click", () => moveSlide("left"));
+      addEventListenerWithCleanup(rightArrow, "click", () => moveSlide("right"));
     };
 
     const goToSlide = (index) => {
@@ -212,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const startAutoSlide = () => {
-      slideInterval = setInterval(() => moveSlide("right"), 2000);
+      slideInterval = setIntervalWithCleanup(() => moveSlide("right"), 2000);
     };
 
     const resetAutoSlide = () => {
@@ -450,15 +512,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
           // Trigger auto-apply in auto-submit mode
           if (autoSubmitMode) {
-            setTimeout(() => applyFilters(), 50);
+            setTimeoutWithCleanup(() => applyFilters(), 50);
           }
         }
       };
 
-      minHandle.addEventListener('mousedown', (e) => onDragStart(e, minHandle));
-      minHandle.addEventListener('touchstart', (e) => onDragStart(e, minHandle), { passive: true });
-      maxHandle.addEventListener('mousedown', (e) => onDragStart(e, maxHandle));
-      maxHandle.addEventListener('touchstart', (e) => onDragStart(e, maxHandle), { passive: true });
+      addEventListenerWithCleanup(minHandle, 'mousedown', (e) => onDragStart(e, minHandle));
+      addEventListenerWithCleanup(minHandle, 'touchstart', (e) => onDragStart(e, minHandle), { passive: true });
+      addEventListenerWithCleanup(maxHandle, 'mousedown', (e) => onDragStart(e, maxHandle));
+      addEventListenerWithCleanup(maxHandle, 'touchstart', (e) => onDragStart(e, maxHandle), { passive: true });
 
       updateSliderVisuals();
     };
@@ -521,8 +583,8 @@ document.addEventListener('DOMContentLoaded', () => {
       wrapper.style.display = (!isNaN(value) && availableBedrooms.has(value)) ? '' : 'none';
     });
 
-    // Filter functionality
-    const applyFilters = () => {
+    // Filter functionality with debouncing
+    const applyFilters = debounce(() => {
       const selectedBedrooms = Array.from(bedroomCheckboxes)
         .filter(cb => cb.checked)
         .map(cb => {
@@ -574,7 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (resultCountSummaryEl) {
         resultCountSummaryEl.textContent = initialCardData.length;
       }
-    };
+    }, 300); // 300ms debounce delay
 
     const resetFilters = () => {
       bedroomCheckboxes.forEach(cb => cb.checked = false);
@@ -630,7 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Attach filter button listener if it exists
     if (filterButton) {
-      filterButton.addEventListener('click', (e) => {
+      addEventListenerWithCleanup(filterButton, 'click', (e) => {
         e.preventDefault();
         applyFilters();
       });
@@ -638,7 +700,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Attach reset button listener if it exists
     if (resetButton) {
-      resetButton.addEventListener('click', (e) => {
+      addEventListenerWithCleanup(resetButton, 'click', (e) => {
         e.preventDefault();
         resetFilters();
       });
@@ -647,7 +709,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Auto-apply when bedroom checkboxes change in auto-submit mode
     if (autoSubmitMode) {
       bedroomCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', () => {
+        addEventListenerWithCleanup(checkbox, 'change', () => {
           applyFilters();
         });
       });
@@ -771,7 +833,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Accordion interaction
-    accordionListContainer.addEventListener('click', function(event) {
+    addEventListenerWithCleanup(accordionListContainer, 'click', function(event) {
       const question = event.target.closest('.accordion_question');
       if (!question) return;
 
@@ -837,19 +899,26 @@ document.addEventListener('DOMContentLoaded', () => {
       const priceSpacer = wrapper.querySelector('.price-spacer');
       const priceMaxDollar = wrapper.querySelector('.price-max-dollar');
       const startingAt = wrapper.querySelector('.startingat');
+      const priceMinDollar = wrapper.querySelector('.price-min-dollar');
 
-      if (priceMinValue && priceMaxValue && priceSpacer) {
-        if (priceMinValue.textContent === priceMaxValue.textContent) {
+      if (priceMinValue && priceSpacer) {
+        const minPrice = priceMinValue.textContent.trim();
+        const maxPrice = priceMaxValue ? priceMaxValue.textContent.trim() : null;
+        
+        // If prices are equal OR max price doesn't exist, show "Starting at" format
+        if (!maxPrice || minPrice === maxPrice) {
           priceSpacer.style.display = 'none';
-          priceMaxValue.style.display = 'none';
-
-          if (priceMaxDollar) {
-            priceMaxDollar.style.display = 'none';
-          }
-
-          if (startingAt) {
-            startingAt.style.display = 'inline';
-          }
+          if (priceMaxValue) priceMaxValue.style.display = 'none';
+          if (priceMaxDollar) priceMaxDollar.style.display = 'none';
+          if (startingAt) startingAt.style.display = 'inline';
+          if (priceMinDollar) priceMinDollar.style.display = 'inline';
+        } else {
+          // Prices are different, hide "Starting at" and show full range
+          if (startingAt) startingAt.style.display = 'none';
+          priceSpacer.style.display = 'inline';
+          if (priceMaxValue) priceMaxValue.style.display = 'inline';
+          if (priceMaxDollar) priceMaxDollar.style.display = 'inline';
+          if (priceMinDollar) priceMinDollar.style.display = 'inline';
         }
       }
 
@@ -867,4 +936,51 @@ document.addEventListener('DOMContentLoaded', () => {
   initCardComparisons();
 
   console.log('✅ PropSync initialization complete');
+
+  // Cleanup on page unload
+  addEventListenerWithCleanup(window, 'beforeunload', cleanup);
+  
+  // Handle page visibility changes to pause/resume intervals
+  let sliderIntervalId = null;
+  addEventListenerWithCleanup(document, 'visibilitychange', () => {
+    if (document.hidden) {
+      // Page is hidden, pause intervals to save resources
+      if (sliderIntervalId) {
+        clearInterval(sliderIntervalId);
+        sliderIntervalId = null;
+      }
+    } else {
+      // Page is visible, restart auto-slider if it exists
+      const slider = document.querySelector(".floorplan-slider");
+      if (slider) {
+        const slideContainer = slider.querySelector(".w-dyn-items");
+        const slideItems = slider.querySelectorAll(".w-dyn-item");
+        if (slideContainer && slideItems.length > 0) {
+          // Restart auto-slide functionality
+          const moveSlide = () => {
+            const totalSlides = slideItems.length;
+            let currentSlide = 0;
+            
+            // Get current slide from transform
+            const currentTransform = slideContainer.style.transform;
+            if (currentTransform) {
+              const match = currentTransform.match(/translateX\(([-\d.]+)%\)/);
+              if (match) {
+                currentSlide = Math.round(-parseFloat(match[1]) / (100 / totalSlides));
+              }
+            }
+            
+            currentSlide = (currentSlide + 1) % totalSlides;
+            const offset = -currentSlide * (100 / totalSlides);
+            slideContainer.style.transform = `translateX(${offset}%)`;
+          };
+          
+          sliderIntervalId = setIntervalWithCleanup(moveSlide, 2000);
+        }
+      }
+    }
+  });
+
+  // Expose cleanup function for manual cleanup if needed
+  window.propSyncCleanup = cleanup;
 });
