@@ -33,6 +33,10 @@ async function buildFile(filePath) {
       },
     });
 
+    if (!result || !result.code) {
+      throw new Error('Minification failed: no output code');
+    }
+
     const outputDir = path.dirname(outputPath);
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });

@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (priceMinValue && priceSpacer) {
       const minPrice = priceMinValue.textContent.trim();
       const maxPrice = priceMaxValue ? priceMaxValue.textContent.trim() : null;
-      
+
       // If prices are equal OR max price doesn't exist, show "Starting at" format
       if (!maxPrice || minPrice === maxPrice) {
         priceSpacer.style.display = 'none';
@@ -285,6 +285,37 @@ document.addEventListener('DOMContentLoaded', () => {
     initSlider();
   };
 
+  // --- Replace "0 Bedroom" with "Studio" ---
+  const replaceZeroBedroomWithStudio = () => {
+    const cards = document.querySelectorAll('.card-wrapper');
+    cards.forEach(card => {
+      const bedroomValueEl = card.querySelector('.bedroom-card-value');
+      if (!bedroomValueEl) return;
+
+      const bedroomValue = bedroomValueEl.textContent.trim();
+      // Check if the value is "0" (after parsing, it should be numeric)
+      const bedNum = parseInt(bedroomValue.replace(/[^0-9.-]+/g, ''), 10);
+
+      if (bedNum === 0) {
+        // Replace "0" with "Studio"
+        bedroomValueEl.textContent = 'Studio';
+
+        // Find and hide sibling elements containing "Bedroom" text
+        // Look within the same parent container (e.g., .bed-bath-wrapper)
+        const parent = bedroomValueEl.parentElement;
+        if (parent) {
+          // Check all siblings in the same parent
+          const siblings = Array.from(parent.children);
+          siblings.forEach(sibling => {
+            if (sibling !== bedroomValueEl && sibling.textContent.includes('Bedroom')) {
+              sibling.style.display = 'none';
+            }
+          });
+        }
+      }
+    });
+  };
+
   // --- List Page A/B Filtering Functionality ---
   const initListPageFiltering = () => {
     const cards = document.querySelectorAll('.card-wrapper');
@@ -350,6 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('✅ PropSync filtering initialized with', cards.length, 'cards');
 
+    const propsyncTabs = document.querySelector('.propsync-tabs');
     const bedroomWrappers = document.querySelectorAll('.bedroom-wrapper');
     const bedroomCheckboxes = document.querySelectorAll('.bedroom-wrapper input[type="checkbox"]');
     const priceRangeContainer = document.querySelector('.price-range');
@@ -414,6 +446,99 @@ document.addEventListener('DOMContentLoaded', () => {
     if (overallMaxPrice === -Infinity || overallMaxPrice < overallMinPrice) overallMaxPrice = Math.max(1000, overallMinPrice);
     if (overallMinSqr === Infinity) overallMinSqr = 0;
     if (overallMaxSqr === -Infinity || overallMaxSqr < overallMinSqr) overallMaxSqr = Math.max(2000, overallMinSqr);
+
+    // --- Tab Filtering Functionality ---
+    if (propsyncTabs) {
+      console.log('📑 Tab filtering mode enabled');
+
+      // Helper function to get bedroom label
+      const getBedroomLabel = (bedCount) => {
+        if (bedCount === 0) return 'Studio';
+        if (bedCount === 1) return '1 Bedroom';
+        return `${bedCount} Bedroom`;
+      };
+
+      // Generate tabs based on available bedroom counts
+      const sortedBedrooms = Array.from(availableBedrooms).sort((a, b) => a - b);
+
+      // Clear existing tabs
+      propsyncTabs.innerHTML = '';
+
+      // Create "View All" tab (active by default)
+      const viewAllTab = document.createElement('div');
+      viewAllTab.className = 'tab__link active';
+      viewAllTab.setAttribute('data-bedroom-filter', 'all');
+      const viewAllButtonText = document.createElement('div');
+      viewAllButtonText.className = 'button-text';
+      viewAllButtonText.textContent = 'View All';
+      viewAllTab.appendChild(viewAllButtonText);
+      propsyncTabs.appendChild(viewAllTab);
+
+      // Create tabs for each bedroom count
+      sortedBedrooms.forEach(bedCount => {
+        const tab = document.createElement('div');
+        tab.className = 'tab__link';
+        tab.setAttribute('data-bedroom-filter', bedCount.toString());
+        const buttonText = document.createElement('div');
+        buttonText.className = 'button-text';
+        buttonText.textContent = getBedroomLabel(bedCount);
+        tab.appendChild(buttonText);
+        propsyncTabs.appendChild(tab);
+      });
+
+      // Tab filtering function
+      const applyTabFilter = (selectedBedroom) => {
+        let visibleCount = 0;
+
+        initialCardData.forEach(cardData => {
+          let isVisible = false;
+
+          if (selectedBedroom === 'all') {
+            isVisible = true;
+          } else {
+            const filterBed = parseInt(selectedBedroom, 10);
+            isVisible = cardData.bed === filterBed;
+          }
+
+          cardData.element.style.display = isVisible ? '' : 'none';
+          if (isVisible) visibleCount++;
+        });
+
+        // Update result counts
+        if (resultsCountEl) {
+          resultsCountEl.textContent = visibleCount;
+        }
+        if (itemsCountEl) {
+          itemsCountEl.textContent = visibleCount;
+        }
+        if (resultCountSummaryEl) {
+          resultCountSummaryEl.textContent = initialCardData.length;
+        }
+      };
+
+      // Add click listeners to tabs
+      propsyncTabs.querySelectorAll('.tab__link').forEach(tab => {
+        addEventListenerWithCleanup(tab, 'click', (e) => {
+          e.preventDefault();
+
+          // Remove active class from all tabs
+          propsyncTabs.querySelectorAll('.tab__link').forEach(t => t.classList.remove('active'));
+
+          // Add active class to clicked tab
+          tab.classList.add('active');
+
+          // Apply filter
+          const filterValue = tab.getAttribute('data-bedroom-filter');
+          applyTabFilter(filterValue);
+        });
+      });
+
+      // Initial filter (show all)
+      applyTabFilter('all');
+
+      // Return early - tabs mode doesn't use checkboxes/sliders
+      return;
+    }
 
     // Setup range sliders
     const setupRangeSlider = (sliderName, container, valueFormatter) => {
@@ -904,7 +1029,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (priceMinValue && priceSpacer) {
         const minPrice = priceMinValue.textContent.trim();
         const maxPrice = priceMaxValue ? priceMaxValue.textContent.trim() : null;
-        
+
         // If prices are equal OR max price doesn't exist, show "Starting at" format
         if (!maxPrice || minPrice === maxPrice) {
           priceSpacer.style.display = 'none';
@@ -932,6 +1057,7 @@ document.addEventListener('DOMContentLoaded', () => {
   formatSquareFootageElements();
   initPageTemplate();
   initListPageFiltering();
+  replaceZeroBedroomWithStudio();
   initAccordionFunctionality();
   initCardComparisons();
 
@@ -939,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Cleanup on page unload
   addEventListenerWithCleanup(window, 'beforeunload', cleanup);
-  
+
   // Handle page visibility changes to pause/resume intervals
   let sliderIntervalId = null;
   addEventListenerWithCleanup(document, 'visibilitychange', () => {
@@ -960,7 +1086,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const moveSlide = () => {
             const totalSlides = slideItems.length;
             let currentSlide = 0;
-            
+
             // Get current slide from transform
             const currentTransform = slideContainer.style.transform;
             if (currentTransform) {
@@ -969,12 +1095,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentSlide = Math.round(-parseFloat(match[1]) / (100 / totalSlides));
               }
             }
-            
+
             currentSlide = (currentSlide + 1) % totalSlides;
             const offset = -currentSlide * (100 / totalSlides);
             slideContainer.style.transform = `translateX(${offset}%)`;
           };
-          
+
           sliderIntervalId = setIntervalWithCleanup(moveSlide, 2000);
         }
       }
