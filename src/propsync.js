@@ -287,6 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Replace "0 Bedroom" with "Studio" ---
   const replaceZeroBedroomWithStudio = () => {
+    // Handle card bedroom values (.bedroom-card-value)
     const cards = document.querySelectorAll('.card-wrapper');
     cards.forEach(card => {
       const bedroomValueEl = card.querySelector('.bedroom-card-value');
@@ -312,6 +313,31 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           });
         }
+      }
+    });
+
+    // Handle filter checkbox bedroom values (.bedroom-value)
+    const bedroomWrappers = document.querySelectorAll('.bedroom-wrapper');
+    bedroomWrappers.forEach(wrapper => {
+      const bedroomValueEl = wrapper.querySelector('.bedroom-value');
+      if (!bedroomValueEl) return;
+
+      const bedroomValue = bedroomValueEl.textContent.trim();
+      // Check if the value is "0" (after parsing, it should be numeric)
+      const bedNum = parseInt(bedroomValue.replace(/[^0-9.-]+/g, ''), 10);
+
+      if (bedNum === 0) {
+        // Replace "0" with "Studio"
+        bedroomValueEl.textContent = 'Studio';
+
+        // Find and hide sibling elements containing "Bedroom" text
+        // Look within the same parent container (.bedroom-wrapper)
+        const siblings = Array.from(wrapper.children);
+        siblings.forEach(sibling => {
+          if (sibling !== bedroomValueEl && sibling.textContent.includes('Bedroom')) {
+            sibling.style.display = 'none';
+          }
+        });
       }
     });
   };
