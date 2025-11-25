@@ -326,6 +326,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // Check if the value is "0" (after parsing, it should be numeric)
       const bedNum = parseInt(bedroomValue.replace(/[^0-9.-]+/g, ''), 10);
 
+      // Store the original numeric value in a data attribute for filtering
+      bedroomValueEl.setAttribute('data-bedroom-num', bedNum.toString());
+
       if (bedNum === 0) {
         // Replace "0" with "Studio"
         bedroomValueEl.textContent = 'Studio';
@@ -730,7 +733,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show/hide bedroom options
     bedroomWrappers.forEach(wrapper => {
       const valueEl = wrapper.querySelector('.bedroom-value');
-      const value = valueEl ? parseInt(valueEl.textContent.trim(), 10) : NaN;
+      if (!valueEl) {
+        wrapper.style.display = 'none';
+        return;
+      }
+
+      // Check if we have a stored numeric value (for "Studio" case)
+      const storedNum = valueEl.getAttribute('data-bedroom-num');
+      let value = NaN;
+      if (storedNum !== null) {
+        value = parseInt(storedNum, 10);
+      } else {
+        value = parseInt(valueEl.textContent.trim(), 10);
+      }
+
       wrapper.style.display = (!isNaN(value) && availableBedrooms.has(value)) ? '' : 'none';
     });
 
@@ -741,7 +757,16 @@ document.addEventListener('DOMContentLoaded', () => {
         .map(cb => {
           const wrapper = cb.closest('.bedroom-wrapper');
           const valueEl = wrapper?.querySelector('.bedroom-value');
-          return valueEl ? parseInt(valueEl.textContent.trim(), 10) : NaN;
+          if (!valueEl) return NaN;
+
+          // Check if we have a stored numeric value (for "Studio" case)
+          const storedNum = valueEl.getAttribute('data-bedroom-num');
+          if (storedNum !== null) {
+            return parseInt(storedNum, 10);
+          }
+
+          // Fallback to parsing text content
+          return parseInt(valueEl.textContent.trim(), 10);
         })
         .filter(val => !isNaN(val));
 
