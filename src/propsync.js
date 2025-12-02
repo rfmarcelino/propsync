@@ -311,15 +311,19 @@ document.addEventListener('DOMContentLoaded', () => {
           bedroomValueEl.textContent = 'Studio';
         }
 
-        // Find and hide sibling elements containing "Bedroom" text
-        // Look within the same parent container (e.g., .bed-bath-wrapper)
+        // Find and hide sibling elements containing "Bedroom" or "Bed" text
+        // Look within the same parent container (e.g., .bed-bath-wrapper or .floorplans-details)
         const parent = bedroomValueEl.parentElement;
         if (parent) {
           // Check all siblings in the same parent
           const siblings = Array.from(parent.children);
           siblings.forEach(sibling => {
-            if (sibling !== bedroomValueEl && sibling.textContent.includes('Bedroom')) {
-              sibling.style.display = 'none';
+            if (sibling !== bedroomValueEl) {
+              const siblingText = sibling.textContent.trim();
+              // Hide if it's exactly "Bed" or "Bedroom" (or contains "Bedroom")
+              if (siblingText === 'Bed' || siblingText.includes('Bedroom')) {
+                sibling.style.display = 'none';
+              }
             }
           });
         }
@@ -346,12 +350,16 @@ document.addEventListener('DOMContentLoaded', () => {
           bedroomValueEl.textContent = 'Studio';
         }
 
-        // Find and hide sibling elements containing "Bedroom" text
+        // Find and hide sibling elements containing "Bedroom" or "Bed" text
         // Look within the same parent container (.bedroom-wrapper)
         const siblings = Array.from(wrapper.children);
         siblings.forEach(sibling => {
-          if (sibling !== bedroomValueEl && sibling.textContent.includes('Bedroom')) {
-            sibling.style.display = 'none';
+          if (sibling !== bedroomValueEl) {
+            const siblingText = sibling.textContent.trim();
+            // Hide if it's exactly "Bed" or "Bedroom" (or contains "Bedroom")
+            if (siblingText === 'Bed' || siblingText.includes('Bedroom')) {
+              sibling.style.display = 'none';
+            }
           }
         });
       }
