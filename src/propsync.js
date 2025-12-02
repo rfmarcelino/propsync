@@ -65,7 +65,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const parseVal = (el, selector, isFloat = false) => {
     const target = el.querySelector(selector);
     if (!target || !target.textContent) return null;
-    const value = target.textContent.trim().replace(/[^0-9.-]+/g, '');
+    const textContent = target.textContent.trim();
+
+    // Handle "Studio" as 0 for bedroom values
+    if (selector.includes('bedroom') && textContent.toLowerCase() === 'studio') {
+      return 0;
+    }
+
+    const value = textContent.replace(/[^0-9.-]+/g, '');
     if (value === '' || value === '-') return null;
     const num = isFloat ? parseFloat(value) : parseInt(value, 10);
     return isNaN(num) ? null : num;
@@ -294,12 +301,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!bedroomValueEl) return;
 
       const bedroomValue = bedroomValueEl.textContent.trim();
+      const isStudio = bedroomValue.toLowerCase() === 'studio';
       // Check if the value is "0" (after parsing, it should be numeric)
       const bedNum = parseInt(bedroomValue.replace(/[^0-9.-]+/g, ''), 10);
 
-      if (bedNum === 0) {
-        // Replace "0" with "Studio"
-        bedroomValueEl.textContent = 'Studio';
+      if (bedNum === 0 || isStudio) {
+        // Ensure it shows "Studio" (replace "0" if needed, or keep "Studio")
+        if (!isStudio) {
+          bedroomValueEl.textContent = 'Studio';
+        }
 
         // Find and hide sibling elements containing "Bedroom" text
         // Look within the same parent container (e.g., .bed-bath-wrapper)
@@ -323,15 +333,18 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!bedroomValueEl) return;
 
       const bedroomValue = bedroomValueEl.textContent.trim();
+      const isStudio = bedroomValue.toLowerCase() === 'studio';
       // Check if the value is "0" (after parsing, it should be numeric)
-      const bedNum = parseInt(bedroomValue.replace(/[^0-9.-]+/g, ''), 10);
+      const bedNum = isStudio ? 0 : parseInt(bedroomValue.replace(/[^0-9.-]+/g, ''), 10);
 
       // Store the original numeric value in a data attribute for filtering
       bedroomValueEl.setAttribute('data-bedroom-num', bedNum.toString());
 
-      if (bedNum === 0) {
-        // Replace "0" with "Studio"
-        bedroomValueEl.textContent = 'Studio';
+      if (bedNum === 0 || isStudio) {
+        // Ensure it shows "Studio" (replace "0" if needed, or keep "Studio")
+        if (!isStudio) {
+          bedroomValueEl.textContent = 'Studio';
+        }
 
         // Find and hide sibling elements containing "Bedroom" text
         // Look within the same parent container (.bedroom-wrapper)
@@ -914,6 +927,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const floorPlanGroups = {};
 
     const getFloorTypeName = (bedValue) => {
+      // Handle "Studio" case
+      if (bedValue.toLowerCase() === 'studio') {
+        return "Studio";
+      }
       const num = parseInt(bedValue, 10);
       if (isNaN(num)) return "Unknown";
       if (num === 0) return "Studio";
@@ -943,7 +960,8 @@ document.addEventListener('DOMContentLoaded', () => {
         processAvailabilityWrapper(card);
 
         const floorType = getFloorTypeName(bedValue);
-        const numericBedValue = parseInt(bedValue, 10);
+        // Handle "Studio" as 0 for numeric sorting
+        const numericBedValue = bedValue.toLowerCase() === 'studio' ? 0 : parseInt(bedValue, 10);
 
         if (isNaN(priceValue)) return;
 
