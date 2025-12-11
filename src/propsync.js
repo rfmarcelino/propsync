@@ -149,6 +149,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // --- Debug: Check for Duplicate Classes ---
+  const checkForDuplicateClasses = () => {
+    // Classes that should only appear once in the document
+    const uniqueClasses = [
+      '.propsync-tabs',
+      '.floor-plan-content',
+      '.button-filter',
+      '.button-reset',
+      '.price-range',
+      '.sqr-range',
+      '.items-summary',
+      '[fs-cmsfilter-element="results-count"]'
+    ];
+
+    const duplicates = [];
+
+    uniqueClasses.forEach(selector => {
+      const elements = document.querySelectorAll(selector);
+      if (elements.length > 1) {
+        duplicates.push({
+          selector,
+          count: elements.length,
+          elements: Array.from(elements)
+        });
+      }
+    });
+
+    if (duplicates.length > 0) {
+      console.warn('⚠️ PropSync: Duplicate classes detected!');
+      console.warn('These classes should only appear once in the document:');
+      duplicates.forEach(({ selector, count, elements }) => {
+        console.warn(`  ❌ ${selector}: found ${count} instances`);
+        elements.forEach((el, idx) => {
+          console.warn(`     Instance ${idx + 1}:`, el);
+        });
+      });
+      console.warn('💡 Tip: Use more specific selectors or unique classes to avoid conflicts.');
+    }
+
+    return duplicates;
+  };
+
   // --- Apply Links ---
   const applyButtons = document.querySelectorAll('[applylink]');
   applyButtons.forEach(function (button) {
@@ -371,10 +413,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const cards = document.querySelectorAll('.card-wrapper');
     const filterButton = document.querySelector('.button-filter');
     const resetButton = document.querySelector('.button-reset');
+    const propsyncTabs = document.querySelector('.propsync-tabs');
 
-    // --- Diagnostic: Check for required filter classes (BEFORE early return) ---
-    const requiredClasses = [
+    // Determine mode: tabs mode vs filter mode
+    const isTabMode = !!propsyncTabs;
+
+    // --- Diagnostic: Check for required classes (BEFORE early return) ---
+    // Define classes needed for each mode
+    const commonClasses = [
       '.card-wrapper',
+      '.bedroom-card-value',
+      '.price-min-card-value',
+      '.price-max-card-value',
+      '.sqr-min-card-value',
+      '.sqr-max-card-value'
+    ];
+
+    const filterModeClasses = [
       '.button-filter',
       '.button-reset',
       '.bedroom-wrapper',
@@ -386,11 +441,6 @@ document.addEventListener('DOMContentLoaded', () => {
       '.items-count',
       '.results-count',
       '.bedroom-value',
-      '.bedroom-card-value',
-      '.price-min-card-value',
-      '.price-max-card-value',
-      '.sqr-min-card-value',
-      '.sqr-max-card-value',
       '.price-min',
       '.price-max',
       '.sqr-min',
@@ -402,6 +452,15 @@ document.addEventListener('DOMContentLoaded', () => {
       '.sqr-max-handler',
       '.sqr-range-bar'
     ];
+
+    const tabModeClasses = [
+      '.propsync-tabs'
+    ];
+
+    // Select appropriate classes based on mode
+    const requiredClasses = isTabMode
+      ? [...commonClasses, ...tabModeClasses]
+      : [...commonClasses, ...filterModeClasses];
 
     const foundClasses = [];
     const missingClasses = [];
@@ -415,12 +474,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Only show diagnostics if classes OTHER than .button-filter are missing
-    // .button-filter is expected to be missing and is handled by auto-submit mode
-    const otherMissingClasses = missingClasses.filter(cls => cls !== '.button-filter');
+    // Filter out expected missing classes
+    // In filter mode: .button-filter can be missing (auto-submit fallback)
+    // In tab mode: filter classes are expected to be missing
+    let otherMissingClasses = missingClasses;
+    if (!isTabMode) {
+      otherMissingClasses = missingClasses.filter(cls => cls !== '.button-filter');
+    }
 
     if (foundClasses.length >= 2 && otherMissingClasses.length > 0) {
-      console.warn('🔍 PropSync Filter Diagnostics:');
+      const modeLabel = isTabMode ? 'Tab Mode' : 'Filter Mode';
+      console.warn(`🔍 PropSync Diagnostics (${modeLabel}):`);
       console.warn(`   Found ${foundClasses.length}/${requiredClasses.length} required classes`);
       console.warn('   ❌ Missing required classes:');
       otherMissingClasses.forEach(cls => console.warn(`      - ${cls}`));
@@ -431,7 +495,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('✅ PropSync filtering initialized with', cards.length, 'cards');
 
-    const propsyncTabs = document.querySelector('.propsync-tabs');
     const bedroomWrappers = document.querySelectorAll('.bedroom-wrapper');
     const bedroomCheckboxes = document.querySelectorAll('.bedroom-wrapper input[type="checkbox"]');
     const priceRangeContainer = document.querySelector('.price-range');
@@ -1130,6 +1193,9 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // --- Initialize All Functionality ---
+  // Run diagnostics first
+  checkForDuplicateClasses();
+
   formatPriceElements();
   formatSquareFootageElements();
   initPageTemplate();

@@ -21,10 +21,12 @@ graph TB
         end
 
         subgraph Diagnostics["Diagnostic System"]
-            CheckClasses["Check Required<br/>Filter Classes"]
+            CheckDuplicates["Check for Duplicate<br/>Classes (Run First)"]
+            DetectMode["Detect Mode:<br/>Tab vs Filter"]
+            CheckClasses["Check Required<br/>Classes per Mode"]
             ValidateElements["Validate Found vs<br/>Missing Classes"]
             LogDiagnostics["Log Results if<br/>Found >= 2"]
-            MissingReport["Report Missing<br/>Classes"]
+            MissingReport["Report Missing<br/>Classes (Context-Aware)"]
         end
 
         subgraph FloorPlan["Floor Plan Display Logic"]
@@ -41,6 +43,8 @@ graph TB
         end
 
         subgraph FilterSystem["Filtering System"]
+            TabMode["Tab Filtering Mode<br/>(if .propsync > .propsync-tabs exists)"]
+            CheckboxMode[Checkbox Filter Mode]
             BedroomFilter[Bedroom Filter]
             PriceSlider[Price Range Slider]
             SqrSlider[Square Footage Slider]
@@ -48,6 +52,7 @@ graph TB
             ResetBtn[Reset Button]
             ResultCount[Results Counter]
             ItemsSummary["Items Summary<br/>- results-count: Total Before Filter<br/>- items-count: After Filter"]
+            GenerateTabs["Generate Dynamic Tabs<br/>Based on Available Bedrooms"]
         end
 
         subgraph AccordionSys["Accordion System"]
@@ -70,11 +75,13 @@ graph TB
     Features --> Accordion
     Features --> CardComp
 
+    Init --> CheckDuplicates
     ListFilter --> Diagnostics
     ListFilter --> FilterSystem
     ListFilter --> FloorPlan
 
-    Diagnostics --> CheckClasses
+    Diagnostics --> DetectMode
+    DetectMode --> CheckClasses
     CheckClasses --> ValidateElements
     ValidateElements --> LogDiagnostics
     LogDiagnostics -->|Found >= 2| MissingReport
@@ -86,9 +93,13 @@ graph TB
     HidePriceEls --> ShowSoldOut
     CheckAvail -->|Valid Price| FormatPrice
 
-    FilterSystem --> BedroomFilter
-    FilterSystem --> PriceSlider
-    FilterSystem --> SqrSlider
+    FilterSystem --> TabMode
+    FilterSystem --> CheckboxMode
+    TabMode --> GenerateTabs
+    GenerateTabs --> BedroomFilter
+    CheckboxMode --> BedroomFilter
+    CheckboxMode --> PriceSlider
+    CheckboxMode --> SqrSlider
     ApplyBtn --> ResultCount
     ApplyBtn --> ItemsSummary
     ResetBtn --> ResultCount
