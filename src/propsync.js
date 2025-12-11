@@ -154,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Classes that should only appear once in the document
     const uniqueClasses = [
       '.propsync-tabs',
-      '.floor-plan-content',
       '.button-filter',
       '.button-reset',
       '.price-range',
@@ -1195,6 +1194,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Initialize All Functionality ---
   // Run diagnostics first
   checkForDuplicateClasses();
+
+  // Log card count on load
+  const initialCards = document.querySelectorAll('.card-wrapper');
+  console.log(`📦 Found ${initialCards.length} cards on page load`);
 
   formatPriceElements();
   formatSquareFootageElements();
