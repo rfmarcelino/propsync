@@ -545,8 +545,9 @@ document.addEventListener('DOMContentLoaded', () => {
       initialCardData.push(cardData);
 
       if (cardData.bed !== null) availableBedrooms.add(cardData.bed);
-      if (cardData.priceMin !== null) overallMinPrice = Math.min(overallMinPrice, cardData.priceMin);
-      if (cardData.priceMax !== null) overallMaxPrice = Math.max(overallMaxPrice, cardData.priceMax);
+      // Exclude negative prices (sold out) from price range calculation
+      if (cardData.priceMin !== null && cardData.priceMin >= 0) overallMinPrice = Math.min(overallMinPrice, cardData.priceMin);
+      if (cardData.priceMax !== null && cardData.priceMax >= 0) overallMaxPrice = Math.max(overallMaxPrice, cardData.priceMax);
       if (cardData.sqrMin !== null) overallMinSqr = Math.min(overallMinSqr, cardData.sqrMin);
       if (cardData.sqrMax !== null) overallMaxSqr = Math.max(overallMaxSqr, cardData.sqrMax);
 
