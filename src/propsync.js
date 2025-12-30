@@ -954,9 +954,11 @@ document.addEventListener('DOMContentLoaded', () => {
           isVisible = false;
         }
 
-        // Price filter
+        // Price filter (skip for sold-out cards with negative prices)
         if (isVisible && cardData.priceMax !== null && cardData.priceMin !== null) {
-          if (cardData.priceMax < priceMin || cardData.priceMin > priceMax) {
+          // Don't filter out sold-out cards (negative prices)
+          const isSoldOut = cardData.priceMin < 0 || cardData.priceMax < 0;
+          if (!isSoldOut && (cardData.priceMax < priceMin || cardData.priceMin > priceMax)) {
             isVisible = false;
           }
         }
@@ -1157,18 +1159,20 @@ document.addEventListener('DOMContentLoaded', () => {
       return !acc.closest('.accordion_list') && !acc.parentElement?.classList.contains('accordion_list');
     });
 
-    console.warn('🔍 PropSync Accordion Diagnostics:');
-    console.warn(`   Found ${allAccordions.length} .accordion_accordion element(s)`);
+    // Only show diagnostics if accordion elements exist
+    if (allAccordions.length > 0) {
+      console.warn('🔍 PropSync Accordion Diagnostics:');
+      console.warn(`   Found ${allAccordions.length} .accordion_accordion element(s)`);
+    }
 
     if (!accordions.length) {
       if (allAccordions.length > 0) {
         console.warn(`   ⚠️  All ${allAccordions.length} accordion(s) filtered out (templates inside .accordion_list)`);
         console.warn('   💡 TIP: Accordions should be placed OUTSIDE .accordion_list container');
         console.warn('   📖 Minimum structure: .accordion_accordion > .accordion_answer > .card-wrapper');
-      } else {
-        console.warn('   ℹ️  No accordion elements found - use Filter or Tab Mode instead');
+        console.warn('   ❌ Accordion Mode NOT activated\n');
       }
-      console.warn('   ❌ Accordion Mode NOT activated\n');
+      // Silently return false when no accordion elements found - this is expected on Filter/Tab pages
       return false;
     }
 
