@@ -59,6 +59,19 @@ npm run build        # Build once (manual)
 - `.button-filter`, `.button-reset`
 - `.items-summary` → `.results-count` (total before filter), `.items-count` (after filter)
 
+**For List Page C (Accordion Mode - grouped by bedroom type):**
+- `.accordion_accordion` → Template accordion containing mixed cards
+  - `.accordion_question` → Accordion header
+  - `.accordion_answer` → Contains `.card-wrapper` elements (directly or in `.floorplan-collection-list`)
+- **Placeholders**: `{{floor_type}}` and `{{starting_price}}` (replaced automatically)
+
+**Mode Detection:**
+- **Tab Mode**: `.propsync-tabs` exists
+- **Filter Mode**: `.button-filter` and filter controls exist
+- **Accordion Mode**: `.accordion_accordion` with cards exists
+- Only one mode activates per page
+
+
 **For Tab-Based Filtering (alternative to checkboxes/sliders):**
 - `.propsync-tabs` → Container for tab elements
   - Automatically generates tabs based on available apartment types
@@ -125,6 +138,75 @@ When `.propsync-tabs` is present on the page, the script automatically generates
   <!-- More tabs for other bedroom counts... -->
 </div>
 ```
+
+### Accordion Mode HTML Structure (List Page C)
+
+**Minimum Required Structure:**
+```html
+<!-- Template accordion with all cards inside -->
+<div class="accordion_accordion">
+  <div class="accordion_question">
+    <div class="floor-plan-container">
+      <div class="accordion_left-wrapper">
+        <div class="floor-plan_type-2">
+          <div class="bedroom-text">{{floor_type}}</div>
+        </div>
+        <div class="floor-plan_square-feet">
+          <div class="floorplan-accordian-text">
+            Starting at {{starting_price}} -- Number of {{floor_type}} Floorplans
+          </div>
+        </div>
+      </div>
+      <div class="accordion_icon-wrapper">
+        <div>+</div>
+      </div>
+    </div>
+  </div>
+  <div class="accordion_answer">
+    <!-- Cards can go directly here -->
+    <div class="card-wrapper">
+      <div class="bedroom-card-value">2</div>
+      <div class="price-min-card-value">575</div>
+      <!-- ... more card details ... -->
+    </div>
+    <div class="card-wrapper">
+      <div class="bedroom-card-value">3</div>
+      <div class="price-min-card-value">495</div>
+      <!-- ... more card details ... -->
+    </div>
+    <!-- More cards... -->
+  </div>
+</div>
+```
+
+**Or with Optional Container:**
+```html
+<div class="accordion_accordion">
+  <div class="accordion_question">
+    <!-- ... same as above ... -->
+  </div>
+  <div class="accordion_answer">
+    <!-- Optional: wrap cards in a collection list -->
+    <div class="floorplan-collection-list">
+      <div class="card-wrapper">
+        <div class="bedroom-card-value">2</div>
+        <div class="price-min-card-value">575</div>
+        <!-- ... more card details ... -->
+      </div>
+      <!-- More cards... -->
+    </div>
+  </div>
+</div>
+```
+
+**What the script does:**
+1. Finds the template `.accordion_accordion` with mixed cards inside
+2. Groups cards by bedroom type (2BR, 3BR, 4BR, etc.)
+3. Clones the template for each bedroom type
+4. Replaces `{{floor_type}}` and `{{starting_price}}` in each clone
+5. Distributes cards into their respective accordion clones
+6. Hides the original template
+7. Inserts cloned accordions sorted by bedroom count (ascending)
 
 ## 🔄 Workflow
 
@@ -238,10 +320,27 @@ When tab filtering activates, you'll see:
 
 ## 🎯 Filtering Modes Summary
 
-The script supports three filtering modes:
+The script supports four filtering modes:
 
+### List Pages A & B - Checkbox/Slider Filtering
 1. **Standard Filtering** (with `.button-filter`): Users click filter button to apply changes
 2. **Auto-Submit Filtering** (without `.button-filter`): Filters apply automatically on interaction
-3. **Tab Filtering** (with `.propsync-tabs`): Tab-based filtering replaces checkbox/slider system
 
-**Important:** Tab filtering and checkbox/slider filtering are mutually exclusive. If `.propsync-tabs` is present, only tab filtering will be active.
+### Alternative Filtering Modes
+3. **Tab Filtering** (with `.propsync-tabs`):
+   - Tab-based filtering that replaces checkbox/slider system
+   - Automatically generates tabs based on available bedroom types
+   - Creates "View All" and individual bedroom tabs
+
+4. **Accordion Mode** (List Page C - with `.accordion_accordion`):
+   - Groups floor plans by bedroom type into collapsible accordions
+   - Clones template accordion for each bedroom type
+   - Replaces `{{floor_type}}` and `{{starting_price}}` placeholders
+   - Automatically sorts accordions by bedroom count (ascending)
+   - Distributes cards into their respective accordions
+   - Each accordion shows bedroom type, starting price, and floor plan count
+
+**Important:**
+- Tab filtering and checkbox/slider filtering are mutually exclusive
+- Accordion mode only affects cards inside `.accordion_component`
+- Each page should use only one filtering approach

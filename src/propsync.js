@@ -408,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // --- List Page A/B Filtering Functionality ---
-  const initListPageFiltering = () => {
+  const initListPageFiltering = (accordionModeActive = false) => {
     const cards = document.querySelectorAll('.card-wrapper');
     const filterButton = document.querySelector('.button-filter');
     const resetButton = document.querySelector('.button-reset');
@@ -473,6 +473,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // Skip diagnostics if Accordion Mode is already active
+    if (accordionModeActive) {
+      return; // Don't show filter/tab diagnostics when accordion mode is handling the page
+    }
+
     // Filter out expected missing classes
     // In filter mode: .button-filter can be missing (auto-submit fallback)
     // In tab mode: filter classes are expected to be missing
@@ -481,12 +486,28 @@ document.addEventListener('DOMContentLoaded', () => {
       otherMissingClasses = missingClasses.filter(cls => cls !== '.button-filter');
     }
 
-    if (foundClasses.length >= 2 && otherMissingClasses.length > 0) {
+    // Determine if we have a mostly complete mode structure
+    const hasSignificantClasses = foundClasses.length >= requiredClasses.length * 0.5; // At least 50% of required classes
+
+    // Show diagnostics if in Filter/Tab mode with missing classes
+    if (hasSignificantClasses && otherMissingClasses.length > 0) {
       const modeLabel = isTabMode ? 'Tab Mode' : 'Filter Mode';
-      console.warn(`🔍 PropSync Diagnostics (${modeLabel}):`);
-      console.warn(`   Found ${foundClasses.length}/${requiredClasses.length} required classes`);
+      console.warn(`\n🔍 PropSync Diagnostics (${modeLabel}):`);
+      console.warn(`   Found ${foundClasses.length}/${requiredClasses.length} ${isTabMode ? 'tab' : 'filter'} mode classes`);
       console.warn('   ❌ Missing required classes:');
       otherMissingClasses.forEach(cls => console.warn(`      - ${cls}`));
+      console.warn('   💡 Complete the structure to enable filtering\n');
+    }
+    // If no mode detected at all, provide guidance
+    else if (!hasSignificantClasses && !isTabMode) {
+      console.warn('\n🔍 PropSync Diagnostics:');
+      console.warn('   ❌ No filtering mode detected');
+      console.warn(`   ℹ️  Found only ${foundClasses.length}/${requiredClasses.length} required classes`);
+      console.warn('   💡 To enable filtering, add one of these structures:');
+      console.warn('      • Tab Mode: Add .propsync-tabs container');
+      console.warn('      • Filter Mode: Add .button-filter and filter controls');
+      console.warn('      • Accordion Mode: Add .accordion_accordion elements');
+      console.warn('   📖 See README.md for full structure requirements\n');
     }
 
     // Only require cards to exist - filterButton and resetButton are optional (auto-submit fallback)
@@ -563,6 +584,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Tab Filtering Functionality ---
     if (propsyncTabs) {
       console.log('📑 Tab filtering mode enabled');
+      console.log('📊 Available bedrooms found:', Array.from(availableBedrooms));
+
+      // Check if tabs are inside an accordion structure - if so, move them outside
+      const accordionComponent = propsyncTabs.closest('.accordion_component');
+      if (accordionComponent) {
+        console.log('📍 Tabs detected inside accordion - moving to top of accordion component');
+        // Create a wrapper for tabs if it doesn't exist
+        let tabsWrapper = accordionComponent.querySelector('.propsync-tabs-wrapper');
+        if (!tabsWrapper) {
+          tabsWrapper = document.createElement('div');
+          tabsWrapper.className = 'propsync-tabs-wrapper';
+          tabsWrapper.style.marginBottom = '20px';
+          accordionComponent.insertBefore(tabsWrapper, accordionComponent.firstChild);
+        }
+        // Move tabs to wrapper (or keep reference if already moved)
+        if (propsyncTabs.parentElement !== tabsWrapper) {
+          tabsWrapper.appendChild(propsyncTabs);
+        }
+      }
 
       // Helper function to get bedroom label
       const getBedroomLabel = (bedCount) => {
@@ -574,6 +614,13 @@ document.addEventListener('DOMContentLoaded', () => {
       // Generate tabs based on available bedroom counts
       const sortedBedrooms = Array.from(availableBedrooms).sort((a, b) => a - b);
 
+      console.log('📋 Generating tabs for bedroom counts:', sortedBedrooms);
+
+      // Ensure the tabs container is visible
+      propsyncTabs.style.display = '';
+      propsyncTabs.style.visibility = 'visible';
+      propsyncTabs.style.opacity = '1';
+
       // Clear existing tabs
       propsyncTabs.innerHTML = '';
 
@@ -581,6 +628,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const viewAllTab = document.createElement('div');
       viewAllTab.className = 'tab__link active';
       viewAllTab.setAttribute('data-bedroom-filter', 'all');
+      // Ensure tab is visible
+      viewAllTab.style.display = '';
+      viewAllTab.style.visibility = 'visible';
       const viewAllButtonText = document.createElement('div');
       viewAllButtonText.className = 'button-text';
       viewAllButtonText.textContent = 'View All';
@@ -592,12 +642,47 @@ document.addEventListener('DOMContentLoaded', () => {
         const tab = document.createElement('div');
         tab.className = 'tab__link';
         tab.setAttribute('data-bedroom-filter', bedCount.toString());
+        // Ensure tab is visible
+        tab.style.display = '';
+        tab.style.visibility = 'visible';
         const buttonText = document.createElement('div');
         buttonText.className = 'button-text';
         buttonText.textContent = getBedroomLabel(bedCount);
         tab.appendChild(buttonText);
         propsyncTabs.appendChild(tab);
       });
+
+      const generatedTabs = propsyncTabs.querySelectorAll('.tab__link');
+      console.log('✅ Tabs generated. Total tabs:', generatedTabs.length);
+
+      if (generatedTabs.length === 0) {
+        console.error('❌ No tabs were generated! Available bedrooms:', Array.from(availableBedrooms));
+      } else {
+        console.log('📝 Tab container has', generatedTabs.length, 'tabs');
+        generatedTabs.forEach((tab, idx) => {
+          console.log(`   Tab ${idx + 1}:`, tab.textContent.trim(), tab.className);
+        });
+
+        // Diagnostic: Check computed styles
+        const computedStyle = window.getComputedStyle(propsyncTabs);
+        console.log('🔍 Tab container computed styles:', {
+          display: computedStyle.display,
+          visibility: computedStyle.visibility,
+          opacity: computedStyle.opacity,
+          height: computedStyle.height,
+          width: computedStyle.width
+        });
+
+        // Check first tab styles
+        if (generatedTabs.length > 0) {
+          const firstTabStyle = window.getComputedStyle(generatedTabs[0]);
+          console.log('🔍 First tab computed styles:', {
+            display: firstTabStyle.display,
+            visibility: firstTabStyle.visibility,
+            opacity: firstTabStyle.opacity
+          });
+        }
+      }
 
       // Tab filtering function
       const applyTabFilter = (selectedBedroom) => {
@@ -988,117 +1073,20 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // --- List Page C Accordion Functionality ---
-  const initAccordionFunctionality = () => {
-    const accordionListContainer = document.querySelector('.accordion_list');
-    const templateAccordion = document.querySelector('.accordion_accordion');
-    const allCardWrappers = Array.from(document.querySelectorAll('.accordion_component .card-wrapper'));
 
-    if (!accordionListContainer || !templateAccordion || !allCardWrappers.length) return;
+  // Helper: Get floor type name from bedroom value
+  const getFloorTypeName = (bedValue) => {
+    if (bedValue.toLowerCase() === 'studio') return "Studio";
+    const num = parseInt(bedValue, 10);
+    if (isNaN(num)) return "Unknown";
+    if (num === 0) return "Studio";
+    if (num === 1) return "1 Bedroom";
+    return `${num} Bedroom`;
+  };
 
-    const floorPlanGroups = {};
-
-    const getFloorTypeName = (bedValue) => {
-      // Handle "Studio" case
-      if (bedValue.toLowerCase() === 'studio') {
-        return "Studio";
-      }
-      const num = parseInt(bedValue, 10);
-      if (isNaN(num)) return "Unknown";
-      if (num === 0) return "Studio";
-      if (num === 1) return "1 Bedroom";
-      return `${num} Bedroom`;
-    };
-
-    // Group cards and mark negative prices as sold out
-    allCardWrappers.forEach(card => {
-      const bedElement = card.querySelector('.bedroom-card-value');
-      const priceElement = card.querySelector('.price-min-card-value');
-      const priceMaxElement = card.querySelector('.price-max-card-value');
-
-      if (bedElement && priceElement) {
-        const bedValue = bedElement.textContent.trim();
-        const priceValue = parseInt(priceElement.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
-        const priceMaxValue = priceMaxElement ? parseInt(priceMaxElement.textContent.trim().replace(/[^0-9.-]+/g, ''), 10) : null;
-
-        // Mark cards with negative prices as sold out
-        if (priceValue < 0 || (priceMaxValue !== null && priceMaxValue < 0)) {
-          const priceContainer = card.querySelector('.price-range');
-          markPriceContainerAsSoldOut(priceContainer || card);
-          // Don't return - continue processing the card
-        }
-
-        // Process availability wrapper for this card
-        processAvailabilityWrapper(card);
-
-        const floorType = getFloorTypeName(bedValue);
-        // Handle "Studio" as 0 for numeric sorting
-        const numericBedValue = bedValue.toLowerCase() === 'studio' ? 0 : parseInt(bedValue, 10);
-
-        if (isNaN(priceValue)) return;
-
-        if (!floorPlanGroups[floorType]) {
-          floorPlanGroups[floorType] = {
-            cards: [],
-            minPrice: Infinity,
-            numericBedValue: isNaN(numericBedValue) ? Infinity : numericBedValue
-          };
-        }
-
-        floorPlanGroups[floorType].cards.push(card);
-        // Only include positive prices in min price calculation
-        if (priceValue >= 0) {
-          floorPlanGroups[floorType].minPrice = Math.min(floorPlanGroups[floorType].minPrice, priceValue);
-        }
-      }
-    });
-
-    const sortedFloorTypes = Object.keys(floorPlanGroups).sort((a, b) => {
-      return floorPlanGroups[a].numericBedValue - floorPlanGroups[b].numericBedValue;
-    });
-
-    accordionListContainer.innerHTML = '';
-
-    sortedFloorTypes.forEach(floorType => {
-      const group = floorPlanGroups[floorType];
-
-      if (group.cards.length > 0) {
-        const newAccordion = templateAccordion.cloneNode(true);
-        const question = newAccordion.querySelector('.accordion_question');
-        const answer = newAccordion.querySelector('.accordion_answer');
-        const titleTextElement = newAccordion.querySelector('.floorplan-accordian-text');
-        const cardList = newAccordion.querySelector('.floorplan-collection-list');
-
-        if (!question || !answer || !titleTextElement || !cardList) return;
-
-        // Build title based on whether there are available units
-        let title;
-        if (group.minPrice === Infinity) {
-          // All cards are sold out
-          title = `${floorType} -- Number of ${group.cards.length} Floorplans`;
-        } else {
-          title = `${floorType} Starting at ${formatCurrency(group.minPrice)} -- Number of ${group.cards.length} Floorplans`;
-        }
-        titleTextElement.textContent = title;
-
-        const simpleTitleElement = newAccordion.querySelector('.bedroom-text');
-        if (simpleTitleElement) simpleTitleElement.textContent = floorType;
-
-        cardList.innerHTML = '';
-        group.cards.forEach(cardElement => {
-          cardList.appendChild(cardElement);
-        });
-
-        answer.style.maxHeight = '0px';
-        answer.style.opacity = '0';
-        answer.style.overflow = 'hidden';
-        newAccordion.classList.remove('active');
-
-        accordionListContainer.appendChild(newAccordion);
-      }
-    });
-
-    // Accordion interaction
-    addEventListenerWithCleanup(accordionListContainer, 'click', function(event) {
+  // Helper: Add accordion click interactivity
+  const addAccordionClickHandler = (container) => {
+    addEventListenerWithCleanup(container, 'click', function(event) {
       const question = event.target.closest('.accordion_question');
       if (!question) return;
 
@@ -1108,22 +1096,234 @@ document.addEventListener('DOMContentLoaded', () => {
       const answer = accordion.querySelector('.accordion_answer');
       const iconWrapper = question.querySelector('.accordion_icon-wrapper');
 
-      if (!answer || !iconWrapper) return;
+      if (!answer) return;
 
       const isActive = accordion.classList.contains('active');
 
       if (isActive) {
         answer.style.maxHeight = '0px';
         answer.style.opacity = '0';
-        iconWrapper.style.transform = 'rotate(0deg)';
+        if (iconWrapper) iconWrapper.style.transform = 'rotate(0deg)';
         accordion.classList.remove('active');
       } else {
         accordion.classList.add('active');
         answer.style.maxHeight = answer.scrollHeight + 'px';
         answer.style.opacity = '1';
-        iconWrapper.style.transform = 'rotate(45deg)';
+        if (iconWrapper) iconWrapper.style.transform = 'rotate(45deg)';
       }
     });
+  };
+
+  // Helper: Process card data (sold out marking, availability)
+  const processCardData = (card) => {
+    const bedElement = card.querySelector('.bedroom-card-value');
+    const priceElement = card.querySelector('.price-min-card-value');
+    const priceMaxElement = card.querySelector('.price-max-card-value');
+
+    if (!bedElement || !priceElement) return null;
+
+    const bedValue = bedElement.textContent.trim();
+    const priceValue = parseInt(priceElement.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
+    const priceMaxValue = priceMaxElement ? parseInt(priceMaxElement.textContent.trim().replace(/[^0-9.-]+/g, ''), 10) : null;
+
+    // Mark cards with negative prices as sold out
+    if (priceValue < 0 || (priceMaxValue !== null && priceMaxValue < 0)) {
+      const priceContainer = card.querySelector('.price-range');
+      markPriceContainerAsSoldOut(priceContainer || card);
+    }
+
+    // Process availability wrapper
+    processAvailabilityWrapper(card);
+
+    const floorType = getFloorTypeName(bedValue);
+    const numericBedValue = bedValue.toLowerCase() === 'studio' ? 0 : parseInt(bedValue, 10);
+
+    if (isNaN(priceValue)) return null;
+
+    return {
+      bedValue,
+      priceValue,
+      priceMaxValue,
+      floorType,
+      numericBedValue: isNaN(numericBedValue) ? Infinity : numericBedValue
+    };
+  };
+
+  // Accordion structure: Has .accordion_accordion with cards already inside
+  const initAccordionStructure = () => {
+    const allAccordions = document.querySelectorAll('.accordion_accordion');
+    const accordions = Array.from(allAccordions).filter(acc => {
+      // Only process accordions NOT inside .accordion_list (those are templates)
+      return !acc.closest('.accordion_list') && !acc.parentElement?.classList.contains('accordion_list');
+    });
+
+    console.warn('🔍 PropSync Accordion Diagnostics:');
+    console.warn(`   Found ${allAccordions.length} .accordion_accordion element(s)`);
+
+    if (!accordions.length) {
+      if (allAccordions.length > 0) {
+        console.warn(`   ⚠️  All ${allAccordions.length} accordion(s) filtered out (templates inside .accordion_list)`);
+        console.warn('   💡 TIP: Accordions should be placed OUTSIDE .accordion_list container');
+        console.warn('   📖 Minimum structure: .accordion_accordion > .accordion_answer > .card-wrapper');
+      } else {
+        console.warn('   ℹ️  No accordion elements found - use Filter or Tab Mode instead');
+      }
+      console.warn('   ❌ Accordion Mode NOT activated\n');
+      return false;
+    }
+
+    console.warn(`   Processing ${accordions.length} accordion(s)`);
+
+    let processedAny = false;
+
+    accordions.forEach((accordion, accordionIndex) => {
+      const answer = accordion.querySelector('.accordion_answer');
+
+      // Try to find cards - check for .floorplan-collection-list first (preferred), then fallback to direct children
+      const cardList = answer?.querySelector('.floorplan-collection-list');
+      let cards = [];
+
+      if (cardList) {
+        cards = Array.from(cardList.querySelectorAll('.card-wrapper'));
+      } else if (answer) {
+        // Fallback: look for cards directly in .accordion_answer
+        cards = Array.from(answer.querySelectorAll('.card-wrapper'));
+      }
+
+      console.warn(`\n   📂 Accordion #${accordionIndex + 1}:`);
+      console.warn(`      - Has .accordion_answer: ${!!answer}`);
+      console.warn(`      - Cards container: ${cardList ? '.floorplan-collection-list' : 'direct in .accordion_answer'}`);
+      console.warn(`      - Found ${cards.length} card(s)`);
+
+      if (!cards.length) {
+        console.warn('      ⚠️  Skipped - No .card-wrapper elements found');
+        return;
+      }
+
+      processedAny = true;
+
+      // Group cards by floor type
+      const floorPlanGroups = {};
+
+      cards.forEach(card => {
+        const cardData = processCardData(card);
+        if (!cardData) return;
+
+        const { floorType, numericBedValue, priceValue } = cardData;
+
+        if (!floorPlanGroups[floorType]) {
+          floorPlanGroups[floorType] = {
+            cards: [],
+            minPrice: Infinity,
+            numericBedValue
+          };
+        }
+
+        floorPlanGroups[floorType].cards.push(card);
+        if (priceValue >= 0) {
+          floorPlanGroups[floorType].minPrice = Math.min(floorPlanGroups[floorType].minPrice, priceValue);
+        }
+      });
+
+      // Sort floor types by bedroom count
+      const sortedTypes = Object.keys(floorPlanGroups).sort((a, b) => {
+        return floorPlanGroups[a].numericBedValue - floorPlanGroups[b].numericBedValue;
+      });
+
+      console.warn(`      📊 Grouped into ${sortedTypes.length} bedroom type(s):`);
+      sortedTypes.forEach(type => {
+        const group = floorPlanGroups[type];
+        const priceText = group.minPrice === Infinity ? 'N/A' : formatCurrency(group.minPrice);
+        console.warn(`         • ${type}: ${group.cards.length} card(s), starting at ${priceText}`);
+      });
+
+      // Use the first accordion as template, hide it
+      accordion.style.display = 'none';
+      const parentContainer = accordion.parentElement;
+
+      // Create one accordion per bedroom type
+      let lastInsertedAccordion = accordion;
+
+      sortedTypes.forEach((floorType, index) => {
+        const group = floorPlanGroups[floorType];
+
+        // Clone the template accordion
+        const newAccordion = accordion.cloneNode(true);
+        newAccordion.style.display = 'block';
+
+        // Get elements in the cloned accordion
+        const newAnswer = newAccordion.querySelector('.accordion_answer');
+
+        // Try to find card container - prefer .floorplan-collection-list, fallback to .accordion_answer
+        let newCardContainer = newAnswer?.querySelector('.floorplan-collection-list');
+        if (!newCardContainer) {
+          newCardContainer = newAnswer;
+        }
+
+        if (!newCardContainer) return;
+
+        // Replace {{floor_type}} placeholder
+        const bedroomTextElements = newAccordion.querySelectorAll('.bedroom-text');
+        bedroomTextElements.forEach(el => {
+          el.textContent = el.textContent.replace(/\{\{floor_type\}\}/g, floorType);
+        });
+
+        // Replace {{starting_price}} and {{floor_type}} in accordion text
+        const accordionTextElements = newAccordion.querySelectorAll('.floorplan-accordian-text');
+        accordionTextElements.forEach(el => {
+          let text = el.textContent;
+
+          // Replace {{starting_price}}
+          if (text.includes('{{starting_price}}')) {
+            const priceText = group.minPrice === Infinity ? 'N/A' : formatCurrency(group.minPrice);
+            text = text.replace(/\{\{starting_price\}\}/g, priceText);
+          }
+
+          // Replace {{floor_type}}
+          text = text.replace(/\{\{floor_type\}\}/g, floorType);
+
+          el.textContent = text;
+        });
+
+        // Clear the card container and add only cards for this bedroom type
+        newCardContainer.innerHTML = '';
+        group.cards.forEach(cardElement => {
+          newCardContainer.appendChild(cardElement);
+        });
+
+        // Set initial collapsed state
+        if (newAnswer) {
+          newAnswer.style.maxHeight = '0px';
+          newAnswer.style.opacity = '0';
+          newAnswer.style.overflow = 'hidden';
+          newAnswer.style.transition = 'max-height 0.3s ease, opacity 0.3s ease';
+        }
+        newAccordion.classList.remove('active');
+
+        // Insert the new accordion after the last inserted accordion
+        if (parentContainer) {
+          parentContainer.insertBefore(newAccordion, lastInsertedAccordion.nextSibling);
+          lastInsertedAccordion = newAccordion;
+        }
+      });
+
+      // Add click handler to parent container
+      if (parentContainer) {
+        addAccordionClickHandler(parentContainer);
+      }
+
+      console.warn(`      ✅ Created ${sortedTypes.length} accordion section(s)`);
+    });
+
+    if (processedAny) {
+      console.warn('\n   ✅ Accordion Mode ACTIVATED');
+    }
+
+    return processedAny;
+  };
+
+  const initAccordionFunctionality = () => {
+    return initAccordionStructure();
   };
 
   // --- Card Price/Square Footage Comparison ---
@@ -1203,9 +1403,9 @@ document.addEventListener('DOMContentLoaded', () => {
   formatPriceElements();
   formatSquareFootageElements();
   initPageTemplate();
-  initListPageFiltering();
   replaceZeroBedroomWithStudio();
-  initAccordionFunctionality();
+  const accordionModeActive = initAccordionFunctionality(); // Must run BEFORE initListPageFiltering to read original prices
+  initListPageFiltering(accordionModeActive);
   initCardComparisons();
 
   console.log('✅ PropSync initialization complete');
