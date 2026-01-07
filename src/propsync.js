@@ -546,8 +546,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const sqrMin = parseVal(card, '.sqr-min-card-value');
       const sqrMax = parseVal(card, '.sqr-max-card-value');
 
-      // Mark cards with negative prices as sold out
-      if ((priceMin !== null && priceMin < 0) || (priceMax !== null && priceMax < 0)) {
+      // Mark cards with prices under $1 (including $0 and negative) as sold out
+      if ((priceMin !== null && priceMin < 1) || (priceMax !== null && priceMax < 1)) {
         const priceContainer = card.querySelector('.price-range');
         markPriceContainerAsSoldOut(priceContainer || card);
         // Process availability wrapper for this card
@@ -566,9 +566,9 @@ document.addEventListener('DOMContentLoaded', () => {
       initialCardData.push(cardData);
 
       if (cardData.bed !== null) availableBedrooms.add(cardData.bed);
-      // Exclude negative prices (sold out) from price range calculation
-      if (cardData.priceMin !== null && cardData.priceMin >= 0) overallMinPrice = Math.min(overallMinPrice, cardData.priceMin);
-      if (cardData.priceMax !== null && cardData.priceMax >= 0) overallMaxPrice = Math.max(overallMaxPrice, cardData.priceMax);
+      // Exclude prices under $1 (sold out) from price range calculation
+      if (cardData.priceMin !== null && cardData.priceMin >= 1) overallMinPrice = Math.min(overallMinPrice, cardData.priceMin);
+      if (cardData.priceMax !== null && cardData.priceMax >= 1) overallMaxPrice = Math.max(overallMaxPrice, cardData.priceMax);
       if (cardData.sqrMin !== null) overallMinSqr = Math.min(overallMinSqr, cardData.sqrMin);
       if (cardData.sqrMax !== null) overallMaxSqr = Math.max(overallMaxSqr, cardData.sqrMax);
 
@@ -954,10 +954,10 @@ document.addEventListener('DOMContentLoaded', () => {
           isVisible = false;
         }
 
-        // Price filter (skip for sold-out cards with negative prices)
+        // Price filter (skip for sold-out cards with prices under $1)
         if (isVisible && cardData.priceMax !== null && cardData.priceMin !== null) {
-          // Don't filter out sold-out cards (negative prices)
-          const isSoldOut = cardData.priceMin < 0 || cardData.priceMax < 0;
+          // Don't filter out sold-out cards (prices under $1, including $0 and negative)
+          const isSoldOut = cardData.priceMin < 1 || cardData.priceMax < 1;
           if (!isSoldOut && (cardData.priceMax < priceMin || cardData.priceMin > priceMax)) {
             isVisible = false;
           }
@@ -1128,8 +1128,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const priceValue = parseInt(priceElement.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
     const priceMaxValue = priceMaxElement ? parseInt(priceMaxElement.textContent.trim().replace(/[^0-9.-]+/g, ''), 10) : null;
 
-    // Mark cards with negative prices as sold out
-    if (priceValue < 0 || (priceMaxValue !== null && priceMaxValue < 0)) {
+    // Mark cards with prices under $1 (including $0 and negative) as sold out
+    if (priceValue < 1 || (priceMaxValue !== null && priceMaxValue < 1)) {
       const priceContainer = card.querySelector('.price-range');
       markPriceContainerAsSoldOut(priceContainer || card);
     }
@@ -1224,7 +1224,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         floorPlanGroups[floorType].cards.push(card);
-        if (priceValue >= 0) {
+        if (priceValue >= 1) {
           floorPlanGroups[floorType].minPrice = Math.min(floorPlanGroups[floorType].minPrice, priceValue);
         }
       });
@@ -1342,11 +1342,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const priceMinNum = parseInt(priceMinValue.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
         const priceMaxNum = parseInt(priceMaxValue.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
 
-        if ((priceMinNum < 0) || (priceMaxNum < 0)) {
+        if ((priceMinNum < 1) || (priceMaxNum < 1)) {
           // Try to find price container, fallback to wrapper
           const container = priceContainer || wrapper;
           markPriceContainerAsSoldOut(container);
-          // Process availability wrapper even when price is negative
+          // Process availability wrapper even when price is under $1
           processAvailabilityWrapper(wrapper);
           return; // Skip further processing for this card
         }
