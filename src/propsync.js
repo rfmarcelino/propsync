@@ -371,38 +371,72 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Handle filter checkbox bedroom values (.bedroom-value)
+    // Handle filter checkbox bedroom values (.bedroom-value or label)
     const bedroomWrappers = document.querySelectorAll('.bedroom-wrapper');
     bedroomWrappers.forEach(wrapper => {
       const bedroomValueEl = wrapper.querySelector('.bedroom-value');
-      if (!bedroomValueEl) return;
+      const label = wrapper.querySelector('label');
 
-      const bedroomValue = bedroomValueEl.textContent.trim();
-      const isStudio = bedroomValue.toLowerCase() === 'studio';
-      // Check if the value is "0" (after parsing, it should be numeric)
-      const bedNum = isStudio ? 0 : parseInt(bedroomValue.replace(/[^0-9.-]+/g, ''), 10);
+      // Use .bedroom-value if it exists, otherwise use label
+      const textElement = bedroomValueEl || label;
+      if (!textElement) return;
+
+      const bedroomValue = textElement.textContent.trim();
+      const bedroomValueLower = bedroomValue.toLowerCase();
+
+      // Check for studio patterns
+      const isStudio = bedroomValueLower === 'studio' || bedroomValueLower === 'studio bedroom' || bedroomValueLower === '0 bedroom';
+
+      // Parse the bedroom number
+      let bedNum;
+      if (isStudio) {
+        bedNum = 0;
+      } else if (bedroomValueLower.startsWith('0')) {
+        bedNum = 0;
+      } else {
+        // Extract first number from text (e.g., "1 Bedroom" -> 1)
+        const match = bedroomValue.match(/(\d+)/);
+        bedNum = match ? parseInt(match[1], 10) : NaN;
+      }
 
       // Store the original numeric value in a data attribute for filtering
-      bedroomValueEl.setAttribute('data-bedroom-num', bedNum.toString());
+      if (!isNaN(bedNum)) {
+        textElement.setAttribute('data-bedroom-num', bedNum.toString());
+      }
 
-      if (bedNum === 0 || isStudio) {
-        // Ensure it shows "Studio" (replace "0" if needed, or keep "Studio")
-        if (!isStudio) {
-          bedroomValueEl.textContent = 'Studio';
-        }
-
-        // Find and hide sibling elements containing "Bedroom" or "Bed" text
-        // Look within the same parent container (.bedroom-wrapper)
-        const siblings = Array.from(wrapper.children);
-        siblings.forEach(sibling => {
-          if (sibling !== bedroomValueEl) {
-            const siblingText = sibling.textContent.trim();
-            // Hide if it's exactly "Bed" or "Bedroom" (or contains "Bedroom")
-            if (siblingText === 'Bed' || siblingText.includes('Bedroom')) {
-              sibling.style.display = 'none';
-            }
+      if (bedNum === 0) {
+        // Replace with "Studio" text
+        if (textElement === label) {
+          // If using label directly, preserve checkbox but update text
+          const checkbox = label.querySelector('input[type="checkbox"]');
+          if (checkbox) {
+            // Clear label and add back checkbox + new text
+            label.innerHTML = '';
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(' Studio'));
+          } else {
+            label.textContent = 'Studio';
           }
-        });
+        } else {
+          // If using .bedroom-value element
+          textElement.textContent = 'Studio';
+
+          // Find and hide sibling elements containing "Bedroom" or "Bed" text
+          // Look within the parent (usually the label) for siblings
+          const parent = textElement.parentElement;
+          if (parent) {
+            const siblings = Array.from(parent.children);
+            siblings.forEach(sibling => {
+              if (sibling !== textElement && sibling.tagName !== 'INPUT') {
+                const siblingText = sibling.textContent.trim();
+                // Hide if it's exactly "Bed" or "Bedroom" (or contains "Bedroom")
+                if (siblingText === 'Bed' || siblingText === 'Bedroom' || siblingText.includes('Bedroom')) {
+                  sibling.style.display = 'none';
+                }
+              }
+            });
+          }
+        }
       }
     });
   };
@@ -902,18 +936,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show/hide bedroom options
     bedroomWrappers.forEach(wrapper => {
       const valueEl = wrapper.querySelector('.bedroom-value');
-      if (!valueEl) {
+      const label = wrapper.querySelector('label');
+
+      // Determine which element contains the bedroom text
+      const textElement = valueEl || label;
+
+      if (!textElement) {
         wrapper.style.display = 'none';
         return;
       }
 
       // Check if we have a stored numeric value (for "Studio" case)
-      const storedNum = valueEl.getAttribute('data-bedroom-num');
+      const storedNum = textElement.getAttribute('data-bedroom-num');
       let value = NaN;
       if (storedNum !== null) {
         value = parseInt(storedNum, 10);
       } else {
-        value = parseInt(valueEl.textContent.trim(), 10);
+        // Fallback: parse text content, handling "Studio" or "Studio Bedroom" as 0
+        const textContent = textElement.textContent.trim().toLowerCase();
+        if (textContent === 'studio' || textContent === 'studio bedroom' || textContent === '0 bedroom') {
+          value = 0;
+        } else {
+          // Extract first number from text (e.g., "1 Bedroom" -> 1)
+          const match = textContent.match(/(\d+)/);
+          if (match) {
+            value = parseInt(match[1], 10);
+          }
+        }
       }
 
       wrapper.style.display = (!isNaN(value) && availableBedrooms.has(value)) ? '' : 'none';
@@ -926,16 +975,32 @@ document.addEventListener('DOMContentLoaded', () => {
         .map(cb => {
           const wrapper = cb.closest('.bedroom-wrapper');
           const valueEl = wrapper?.querySelector('.bedroom-value');
-          if (!valueEl) return NaN;
+          const label = wrapper?.querySelector('label');
+
+          // Determine which element contains the bedroom text
+          const textElement = valueEl || label;
+
+          if (!textElement) return NaN;
 
           // Check if we have a stored numeric value (for "Studio" case)
-          const storedNum = valueEl.getAttribute('data-bedroom-num');
+          const storedNum = textElement.getAttribute('data-bedroom-num');
           if (storedNum !== null) {
             return parseInt(storedNum, 10);
           }
 
-          // Fallback to parsing text content
-          return parseInt(valueEl.textContent.trim(), 10);
+          // Fallback: parse text content, handling "Studio" or "Studio Bedroom" as 0
+          const textContent = textElement.textContent.trim().toLowerCase();
+          if (textContent === 'studio' || textContent === 'studio bedroom' || textContent === '0 bedroom') {
+            return 0;
+          }
+
+          // Extract first number from text (e.g., "1 Bedroom" -> 1)
+          const match = textContent.match(/(\d+)/);
+          if (match) {
+            return parseInt(match[1], 10);
+          }
+
+          return NaN;
         })
         .filter(val => !isNaN(val));
 
