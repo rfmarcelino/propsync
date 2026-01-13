@@ -53,6 +53,7 @@ graph TB
             ResultCount[Results Counter]
             ItemsSummary["Items Summary<br/>- results-count: Total Before Filter<br/>- items-count: After Filter"]
             GenerateTabs["Generate Dynamic Tabs<br/>Based on Available Bedrooms"]
+            URLParam["URL Parameter Handler<br/>Parse ?bed=X and Auto-Apply"]
         end
 
         subgraph AccordionSys["Accordion System"]
@@ -95,11 +96,14 @@ graph TB
 
     FilterSystem --> TabMode
     FilterSystem --> CheckboxMode
+    FilterSystem --> URLParam
     TabMode --> GenerateTabs
     GenerateTabs --> BedroomFilter
     CheckboxMode --> BedroomFilter
     CheckboxMode --> PriceSlider
     CheckboxMode --> SqrSlider
+    URLParam -->|Tab Mode| GenerateTabs
+    URLParam -->|Checkbox Mode| BedroomFilter
     ApplyBtn --> ResultCount
     ApplyBtn --> ItemsSummary
     ResetBtn --> ResultCount

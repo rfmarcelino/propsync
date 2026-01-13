@@ -441,6 +441,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
+  // --- Helper: Parse URL parameters ---
+  const getUrlParameter = (name) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+  };
+
   // --- List Page A/B Filtering Functionality ---
   const initListPageFiltering = (accordionModeActive = false) => {
     const cards = document.querySelectorAll('.card-wrapper');
@@ -765,8 +771,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       });
 
-      // Initial filter (show all)
-      applyTabFilter('all');
+      // Check for URL parameter and apply filter
+      const bedParam = getUrlParameter('bed');
+      if (bedParam !== null) {
+        console.log(`🔗 URL parameter detected: bed=${bedParam}`);
+
+        // Find and activate the corresponding tab
+        const targetTab = propsyncTabs.querySelector(`[data-bedroom-filter="${bedParam}"]`);
+
+        if (targetTab) {
+          // Remove active class from all tabs
+          propsyncTabs.querySelectorAll('.tab__link').forEach(t => t.classList.remove('active'));
+
+          // Add active class to target tab
+          targetTab.classList.add('active');
+
+          // Apply the filter
+          applyTabFilter(bedParam);
+          console.log(`✅ Tab filter applied for ${bedParam} bedroom(s)`);
+        } else {
+          console.warn(`⚠️  No tab found for bed=${bedParam}, showing all results`);
+          applyTabFilter('all');
+        }
+      } else {
+        // Initial filter (show all)
+        applyTabFilter('all');
+      }
 
       // Return early - tabs mode doesn't use checkboxes/sliders
       return;
@@ -1125,6 +1155,58 @@ document.addEventListener('DOMContentLoaded', () => {
           applyFilters();
         });
       });
+    }
+
+    // Check for URL parameter and apply filter
+    const bedParam = getUrlParameter('bed');
+    if (bedParam !== null) {
+      console.log(`🔗 URL parameter detected: bed=${bedParam}`);
+
+      let filterApplied = false;
+
+      // Find and check the corresponding bedroom checkbox
+      bedroomWrappers.forEach(wrapper => {
+        const valueEl = wrapper.querySelector('.bedroom-value');
+        const label = wrapper.querySelector('label');
+        const checkbox = wrapper.querySelector('input[type="checkbox"]');
+
+        if (!checkbox) return;
+
+        const textElement = valueEl || label;
+        if (!textElement) return;
+
+        // Get the stored numeric value or parse from text
+        const storedNum = textElement.getAttribute('data-bedroom-num');
+        let bedValue = null;
+
+        if (storedNum !== null) {
+          bedValue = storedNum;
+        } else {
+          const textContent = textElement.textContent.trim().toLowerCase();
+          if (textContent === 'studio' || textContent === 'studio bedroom' || textContent === '0 bedroom') {
+            bedValue = '0';
+          } else {
+            const match = textContent.match(/(\d+)/);
+            if (match) {
+              bedValue = match[1];
+            }
+          }
+        }
+
+        // Check the checkbox if it matches the URL parameter
+        if (bedValue === bedParam) {
+          checkbox.checked = true;
+          filterApplied = true;
+        }
+      });
+
+      if (filterApplied) {
+        // Apply filters immediately
+        applyFilters();
+        console.log(`✅ Filter applied for ${bedParam} bedroom(s)`);
+      } else {
+        console.warn(`⚠️  No filter option found for bed=${bedParam}, showing all results`);
+      }
     }
 
     // Initial count

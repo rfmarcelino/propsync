@@ -139,6 +139,62 @@ When `.propsync-tabs` is present on the page, the script automatically generates
 </div>
 ```
 
+## 🔗 URL Parameter Filtering
+
+The script automatically detects and applies filters based on URL query parameters, allowing for direct links to filtered views.
+
+### How It Works
+
+Add a `bed` parameter to your URL to automatically filter cards by bedroom count on page load:
+
+**Example URLs:**
+```
+yoursite.com/properties?bed=3          # Shows only 3-bedroom properties
+yoursite.com/properties?bed=0          # Shows only Studio apartments
+yoursite.com/properties?bed=1          # Shows only 1-bedroom properties
+yoursite.com/properties?bed=2          # Shows only 2-bedroom properties
+```
+
+### Supported Modes
+
+URL parameter filtering works with both filtering modes:
+
+#### 1. Tab Mode
+- Automatically activates the corresponding tab
+- Updates the tab's `.active` class
+- Filters cards to show only matching bedrooms
+
+#### 2. Checkbox/Filter Mode
+- Automatically checks the corresponding bedroom checkbox
+- Applies the filter immediately
+- Updates result counts
+
+### Features
+- ✅ **Automatic Detection**: No additional configuration needed
+- ✅ **Fallback Handling**: Shows all results if parameter value doesn't match any filter
+- ✅ **Console Logging**: Logs filter application for debugging
+- ✅ **Deep Linking**: Perfect for sharing specific filtered views
+- ✅ **Marketing Campaigns**: Create direct links to specific property types
+
+### Console Output
+When a URL parameter is detected, you'll see:
+```
+🔗 URL parameter detected: bed=3
+✅ Tab filter applied for 3 bedroom(s)
+```
+
+Or:
+```
+🔗 URL parameter detected: bed=3
+✅ Filter applied for 3 bedroom(s)
+```
+
+If the parameter value doesn't match any available filter:
+```
+🔗 URL parameter detected: bed=5
+⚠️  No tab found for bed=5, showing all results
+```
+
 ### Accordion Mode HTML Structure (List Page C)
 
 **Minimum Required Structure:**
@@ -331,6 +387,7 @@ The script supports four filtering modes:
    - Tab-based filtering that replaces checkbox/slider system
    - Automatically generates tabs based on available bedroom types
    - Creates "View All" and individual bedroom tabs
+   - Supports URL parameter filtering (e.g., `?bed=3`)
 
 4. **Accordion Mode** (List Page C - with `.accordion_accordion`):
    - Groups floor plans by bedroom type into collapsible accordions
@@ -340,7 +397,14 @@ The script supports four filtering modes:
    - Distributes cards into their respective accordions
    - Each accordion shows bedroom type, starting price, and floor plan count
 
+### URL Parameter Filtering
+All filtering modes (except Accordion Mode) support URL parameter filtering:
+- Add `?bed=X` to the URL to auto-apply filters on page load
+- Works with Tab Mode and Checkbox/Filter Mode
+- Perfect for deep linking and marketing campaigns
+
 **Important:**
 - Tab filtering and checkbox/slider filtering are mutually exclusive
 - Accordion mode only affects cards inside `.accordion_component`
 - Each page should use only one filtering approach
+- URL parameters work automatically with no additional setup needed
