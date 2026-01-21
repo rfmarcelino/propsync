@@ -1,6 +1,36 @@
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🚀 PropSync Unified Script Loaded');
 
+  // --- Disable Finsweet CMS Filter (if present) ---
+  // PropSync will take full control of filtering
+  const disableFinsweetCMSFilter = () => {
+    // Remove all fs-cmsfilter attributes to prevent interference
+    const finsweetElements = document.querySelectorAll('[fs-cmsfilter-element], [fs-cmsfilter-field], [fs-cmsfilter-reset]');
+    
+    if (finsweetElements.length > 0) {
+      console.log(`🚫 Disabling Finsweet CMS Filter (found ${finsweetElements.length} elements)`);
+      
+      finsweetElements.forEach(el => {
+        // Remove all fs-cmsfilter-* attributes
+        Array.from(el.attributes).forEach(attr => {
+          if (attr.name.startsWith('fs-cmsfilter')) {
+            el.removeAttribute(attr.name);
+          }
+        });
+      });
+      
+      // Disable Finsweet script if it's loaded
+      if (window.fsAttributes) {
+        window.fsAttributes = undefined;
+      }
+      
+      console.log('✅ Finsweet CMS Filter disabled - PropSync has full control');
+    }
+  };
+
+  // Run immediately to prevent Finsweet from initializing
+  disableFinsweetCMSFilter();
+
   // --- Helper Functions ---
   const debounce = (func, wait) => {
     let timeout;
@@ -1189,19 +1219,33 @@ document.addEventListener('DOMContentLoaded', () => {
             const match = textContent.match(/(\d+)/);
             if (match) {
               bedValue = match[1];
+            } else {
+              // Fallback: try parsing the entire text as a number
+              const parsed = parseInt(textContent, 10);
+              if (!isNaN(parsed)) {
+                bedValue = String(parsed);
+              }
             }
           }
         }
 
         // Check the checkbox if it matches the URL parameter
         if (bedValue === bedParam) {
+          // Set the actual checkbox state
           checkbox.checked = true;
+          
+          // Update Webflow's visual checkbox element (if using Webflow custom checkboxes)
+          const webflowCheckboxDiv = wrapper.querySelector('.w-checkbox-input');
+          if (webflowCheckboxDiv) {
+            webflowCheckboxDiv.classList.add('w--redirected-checked');
+          }
+          
           filterApplied = true;
         }
       });
 
       if (filterApplied) {
-        // Apply filters immediately
+        // Apply filters after setting the checkbox from URL parameter
         applyFilters();
         console.log(`✅ Filter applied for ${bedParam} bedroom(s)`);
       } else {
