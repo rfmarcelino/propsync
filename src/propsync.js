@@ -188,8 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
       '.button-reset',
       '.price-range',
       '.sqr-range',
-      '.items-summary',
-      '[fs-cmsfilter-element="results-count"]'
+      '.items-summary'
     ];
 
     const duplicates = [];
@@ -505,7 +504,6 @@ document.addEventListener('DOMContentLoaded', () => {
       '.bedroom-wrapper input[type="checkbox"]',
       '.price-range',
       '.sqr-range',
-      '[fs-cmsfilter-element="results-count"]',
       '.items-summary',
       '.items-count',
       '.results-count',
@@ -589,7 +587,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const bedroomCheckboxes = document.querySelectorAll('.bedroom-wrapper input[type="checkbox"]');
     const priceRangeContainer = document.querySelector('.price-range');
     const sqrRangeContainer = document.querySelector('.sqr-range');
-    const resultsCountEl = document.querySelector('[fs-cmsfilter-element="results-count"]');
     const itemsSummaryEl = document.querySelector('.items-summary');
     const itemsCountEl = itemsSummaryEl?.querySelector('.items-count');
     const resultCountSummaryEl = itemsSummaryEl?.querySelector('.results-count');
@@ -773,9 +770,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Update result counts
-        if (resultsCountEl) {
-          resultsCountEl.textContent = visibleCount;
-        }
         if (itemsCountEl) {
           itemsCountEl.textContent = visibleCount;
         }
@@ -1099,9 +1093,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isVisible) visibleCount++;
       });
 
-      if (resultsCountEl) {
-        resultsCountEl.textContent = visibleCount;
-      }
       if (itemsCountEl) {
         itemsCountEl.textContent = visibleCount;
       }
@@ -1151,9 +1142,6 @@ document.addEventListener('DOMContentLoaded', () => {
         cardData.element.style.display = '';
       });
 
-      if (resultsCountEl) {
-        resultsCountEl.textContent = initialCardData.length;
-      }
       if (itemsCountEl) {
         itemsCountEl.textContent = initialCardData.length;
       }
@@ -1254,9 +1242,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initial count
-    if (resultsCountEl) {
-      resultsCountEl.textContent = initialCardData.length;
-    }
     if (itemsCountEl) {
       itemsCountEl.textContent = initialCardData.length;
     }
