@@ -90,7 +90,7 @@ npm run build        # Build once (manual)
   - If `.available-items` = 1-9: Shows count and `.available-text`, hides `.available-sold-out`
 
 **For Price Sold Out Handling:**
-- If `.price-min-card-value` < 0 (e.g., -1): Replaced with "Sold Out", hides dollar signs, spacer, max price, and "Starting at" text
+- If `.price-min-card-value` < 0 (e.g., -1): Replaced with the text from `.available-sold-out` or "Sold Out" if not available, hides dollar signs, spacer, max price, and "Starting at" text
 
 ## 🏷️ Automatic Text Replacement
 
