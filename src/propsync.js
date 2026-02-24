@@ -125,9 +125,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (el) el.style.display = 'none';
     });
 
-    // Replace price min value with "Sold Out"
+    // Replace price min value with sold out text from availability wrapper when available
     if (priceMinValue) {
-      priceMinValue.textContent = 'Sold Out';
+      const soldOutEl = priceContainer.querySelector('.available-sold-out');
+      const soldOutText = soldOutEl && soldOutEl.textContent
+        ? soldOutEl.textContent.trim()
+        : '';
+      priceMinValue.textContent = soldOutText || 'Sold Out';
       priceMinValue.style.display = '';  // Make sure it's visible
     }
   };
