@@ -127,7 +127,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Replace price min value with sold out text from availability wrapper when available
     if (priceMinValue) {
-      const soldOutEl = priceContainer.querySelector('.available-sold-out');
+      const cardContainer = priceContainer.closest('.card-wrapper');
+      const soldOutEl = priceContainer.querySelector('.available-sold-out')
+        || (cardContainer ? cardContainer.querySelector('.available-sold-out') : null);
       const soldOutText = soldOutEl && soldOutEl.textContent
         ? soldOutEl.textContent.trim()
         : '';
