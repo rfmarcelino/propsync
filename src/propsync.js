@@ -1520,6 +1520,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const priceMaxValue = wrapper.querySelector('.price-max-card-value');
       const priceContainer = wrapper.querySelector('.price-range');
 
+      let isSoldOutCard = false;
       if (priceMinValue && priceMaxValue) {
         const priceMinNum = parseInt(priceMinValue.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
         const priceMaxNum = parseInt(priceMaxValue.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
@@ -1528,9 +1529,7 @@ document.addEventListener('DOMContentLoaded', () => {
           // Try to find price container, fallback to wrapper
           const container = priceContainer || wrapper;
           markPriceContainerAsSoldOut(container);
-          // Process availability wrapper even when price is under $1
-          processAvailabilityWrapper(wrapper);
-          return; // Skip further processing for this card
+          isSoldOutCard = true;
         }
       }
 
@@ -1552,7 +1551,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const startingAt = wrapper.querySelector('.startingat');
       const priceMinDollar = wrapper.querySelector('.price-min-dollar');
 
-      if (priceMinValue && priceSpacer) {
+      if (!isSoldOutCard && priceMinValue && priceSpacer) {
         const minPrice = priceMinValue.textContent.trim();
         const maxPrice = priceMaxValue ? priceMaxValue.textContent.trim() : null;
 
