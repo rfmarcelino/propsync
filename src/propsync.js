@@ -293,8 +293,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const minPrice = priceMinValue.textContent.trim();
       const maxPrice = priceMaxValue ? priceMaxValue.textContent.trim() : null;
 
-      // If prices are equal OR max price doesn't exist, show "Starting at" format
-      if (!maxPrice || minPrice === maxPrice) {
+      // If max is 0 or missing, or prices equal → "Starting at" format
+      const maxNum = maxPrice ? parseFloat(String(maxPrice).replace(/[^0-9.-]+/g, '')) : NaN;
+      const minNum = minPrice ? parseFloat(String(minPrice).replace(/[^0-9.-]+/g, '')) : NaN;
+      const useStartingAt = !maxPrice || minPrice === maxPrice || (maxNum === 0 && minNum > 0);
+      if (useStartingAt) {
         priceSpacer.style.display = 'none';
         if (priceMaxValue) priceMaxValue.style.display = 'none';
         if (priceMaxDollar) priceMaxDollar.style.display = 'none';
@@ -619,8 +622,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const sqrMin = parseVal(card, '.sqr-min-card-value');
       const sqrMax = parseVal(card, '.sqr-max-card-value');
 
-      // Mark cards with prices under $1 (including $0 and negative) as sold out
-      if ((priceMin !== null && priceMin < 1) || (priceMax !== null && priceMax < 1)) {
+      // Mark cards with invalid min price as sold out (ignore max when it's 0 and min is valid)
+      if (priceMin !== null && priceMin < 1) {
         const priceContainer = card.querySelector('.price-range');
         markPriceContainerAsSoldOut(priceContainer || card);
         // Process availability wrapper for this card
@@ -1081,9 +1084,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Price filter (skip for sold-out cards with prices under $1)
         if (isVisible && cardData.priceMax !== null && cardData.priceMin !== null) {
-          // Don't filter out sold-out cards (prices under $1, including $0 and negative)
-          const isSoldOut = cardData.priceMin < 1 || cardData.priceMax < 1;
-          if (!isSoldOut && (cardData.priceMax < priceMin || cardData.priceMin > priceMax)) {
+          const isSoldOut = cardData.priceMin < 1;
+          const effectivePriceMax = (cardData.priceMax === 0 && cardData.priceMin >= 1)
+            ? Infinity
+            : cardData.priceMax;
+          if (!isSoldOut && (effectivePriceMax < priceMin || cardData.priceMin > priceMax)) {
             isVisible = false;
           }
         }
@@ -1555,8 +1560,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const minPrice = priceMinValue.textContent.trim();
         const maxPrice = priceMaxValue ? priceMaxValue.textContent.trim() : null;
 
-        // If prices are equal OR max price doesn't exist, show "Starting at" format
-        if (!maxPrice || minPrice === maxPrice) {
+        // If max is 0 or missing, or prices equal → "Starting at" format
+        const maxNum = maxPrice ? parseFloat(String(maxPrice).replace(/[^0-9.-]+/g, '')) : NaN;
+        const minNum = minPrice ? parseFloat(String(minPrice).replace(/[^0-9.-]+/g, '')) : NaN;
+        const useStartingAt = !maxPrice || minPrice === maxPrice || (maxNum === 0 && minNum > 0);
+        if (useStartingAt) {
           priceSpacer.style.display = 'none';
           if (priceMaxValue) priceMaxValue.style.display = 'none';
           if (priceMaxDollar) priceMaxDollar.style.display = 'none';
