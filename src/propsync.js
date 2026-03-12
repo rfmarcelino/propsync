@@ -622,8 +622,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const sqrMin = parseVal(card, '.sqr-min-card-value');
       const sqrMax = parseVal(card, '.sqr-max-card-value');
 
-      // Mark cards with invalid min price as sold out (ignore max when it's 0 and min is valid)
-      if (priceMin !== null && priceMin < 1) {
+      // Mark cards with negative prices as sold out (ignore max when it's 0 and min is valid)
+      if ((priceMin !== null && priceMin < 0) || (priceMax !== null && priceMax < 0)) {
         const priceContainer = card.querySelector('.price-range');
         markPriceContainerAsSoldOut(priceContainer || card);
         // Process availability wrapper for this card
@@ -1082,9 +1082,9 @@ document.addEventListener('DOMContentLoaded', () => {
           isVisible = false;
         }
 
-        // Price filter (skip for sold-out cards with prices under $1)
+        // Price filter (skip for sold-out cards with negative prices)
         if (isVisible && cardData.priceMax !== null && cardData.priceMin !== null) {
-          const isSoldOut = cardData.priceMin < 1;
+          const isSoldOut = (cardData.priceMin !== null && cardData.priceMin < 0) || (cardData.priceMax !== null && cardData.priceMax < 0);
           const effectivePriceMax = (cardData.priceMax === 0 && cardData.priceMin >= 1)
             ? Infinity
             : cardData.priceMax;
@@ -1315,8 +1315,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const priceValue = parseInt(priceElement.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
     const priceMaxValue = priceMaxElement ? parseInt(priceMaxElement.textContent.trim().replace(/[^0-9.-]+/g, ''), 10) : null;
 
-    // Mark cards with invalid min price as sold out (ignore max when it's 0 and min is valid)
-    if (priceValue < 1) {
+    // Mark cards with negative prices as sold out (ignore max when it's 0 and min is valid)
+    if (priceValue < 0 || (priceMaxValue !== null && priceMaxValue < 0)) {
       const priceContainer = card.querySelector('.price-range');
       markPriceContainerAsSoldOut(priceContainer || card);
     }
@@ -1529,8 +1529,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (priceMinValue && priceMaxValue) {
         const priceMinNum = parseInt(priceMinValue.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
         const priceMaxNum = parseInt(priceMaxValue.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
-        // Only mark sold out when min < 1; ignore max when it's 0 and min is valid
-        if (priceMinNum < 1) {
+        // Only mark sold out when min or max is negative; ignore max when it's 0 and min is valid
+        if (priceMinNum < 0 || priceMaxNum < 0) {
           const container = priceContainer || wrapper;
           markPriceContainerAsSoldOut(container);
           isSoldOutCard = true;
