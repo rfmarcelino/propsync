@@ -1196,7 +1196,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 300); // 300ms debounce delay
 
     const resetFilters = () => {
-      bedroomCheckboxes.forEach(cb => cb.checked = false);
+      bedroomCheckboxes.forEach(cb => {
+        cb.checked = false;
+        const wrapper = cb.closest('.bedroom-wrapper');
+        const webflowCheckboxDiv = wrapper?.querySelector('.w-checkbox-input');
+        if (webflowCheckboxDiv) {
+          webflowCheckboxDiv.classList.remove('w--redirected-checked');
+        }
+      });
 
       if (priceRangeContainer) {
         const priceMinHandler = priceRangeContainer.querySelector('.price-min-handler');
