@@ -371,6 +371,78 @@ document.addEventListener('DOMContentLoaded', () => {
     initSlider();
   };
 
+  // --- Slider Wrapper (card-level image slideshow) ---
+  const sliderWrapperIntervalIds = [];
+  const sliderWrapperRestarts = [];
+
+  const initSliderWrappers = () => {
+    const wrappers = document.querySelectorAll('.slider-wrapper');
+    wrappers.forEach((sliderWrapper) => {
+      const slideContainer = sliderWrapper.querySelector('.w-dyn-items');
+      const slideItems = slideContainer
+        ? Array.from(slideContainer.querySelectorAll('.slide-wrapper'))
+        : [];
+      if (!slideContainer || slideItems.length < 2) return;
+
+      sliderWrapper.style.overflow = 'hidden';
+      sliderWrapper.style.position = 'relative';
+      slideContainer.style.display = 'flex';
+      slideContainer.style.transition = 'transform 0.5s ease-in-out';
+      const totalSlides = slideItems.length;
+      slideContainer.style.width = `${totalSlides * 100}%`;
+      slideItems.forEach((slide) => {
+        slide.style.flex = '1';
+        slide.style.width = `${100 / totalSlides}%`;
+      });
+
+      let currentSlide = 0;
+      const goToSlide = (index) => {
+        currentSlide = index;
+        const offset = -currentSlide * (100 / totalSlides);
+        slideContainer.style.transform = `translateX(${offset}%)`;
+      };
+      const moveSlide = () => {
+        currentSlide = (currentSlide + 1) % totalSlides;
+        goToSlide(currentSlide);
+      };
+
+      const arrowBaseStyle = 'position:absolute;top:50%;transform:translateY(-50%);z-index:2;cursor:pointer;width:36px;height:36px;display:flex;align-items:center;justify-content:center;';
+      const chevronSvg = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5"/></svg>';
+
+      const leftArrow = document.createElement('div');
+      leftArrow.className = 'slider-arrow-left_small';
+      leftArrow.setAttribute('role', 'button');
+      leftArrow.setAttribute('aria-label', 'Previous slide');
+      leftArrow.style.cssText = arrowBaseStyle + 'left:0;';
+      leftArrow.innerHTML = chevronSvg;
+      sliderWrapper.appendChild(leftArrow);
+
+      const rightArrow = document.createElement('div');
+      rightArrow.className = 'slider-arrow-right_small';
+      rightArrow.setAttribute('role', 'button');
+      rightArrow.setAttribute('aria-label', 'Next slide');
+      rightArrow.style.cssText = arrowBaseStyle + 'right:0;';
+      rightArrow.innerHTML = chevronSvg;
+      rightArrow.style.transform = 'translateY(-50%) scaleX(-1)';
+      sliderWrapper.appendChild(rightArrow);
+
+      addEventListenerWithCleanup(leftArrow, 'click', () => {
+        currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+        goToSlide(currentSlide);
+      });
+      addEventListenerWithCleanup(rightArrow, 'click', () => {
+        moveSlide();
+      });
+
+      const restart = () => {
+        const id = setIntervalWithCleanup(moveSlide, 2500);
+        sliderWrapperIntervalIds.push(id);
+      };
+      sliderWrapperRestarts.push(restart);
+      restart();
+    });
+  };
+
   // --- Replace "0 Bedroom" with "Studio" ---
   const replaceZeroBedroomWithStudio = () => {
     // Handle card bedroom values (.bedroom-card-value)
@@ -1595,6 +1667,7 @@ document.addEventListener('DOMContentLoaded', () => {
   formatPriceElements();
   formatSquareFootageElements();
   initPageTemplate();
+  initSliderWrappers();
   replaceZeroBedroomWithStudio();
   const accordionModeActive = initAccordionFunctionality(); // Must run BEFORE initListPageFiltering to read original prices
   initListPageFiltering(accordionModeActive);
@@ -1614,6 +1687,8 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(sliderIntervalId);
         sliderIntervalId = null;
       }
+      sliderWrapperIntervalIds.forEach((id) => clearInterval(id));
+      sliderWrapperIntervalIds.length = 0;
     } else {
       // Page is visible, restart auto-slider if it exists
       const slider = document.querySelector(".floorplan-slider");
@@ -1621,12 +1696,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const slideContainer = slider.querySelector(".w-dyn-items");
         const slideItems = slider.querySelectorAll(".w-dyn-item");
         if (slideContainer && slideItems.length > 0) {
-          // Restart auto-slide functionality
           const moveSlide = () => {
             const totalSlides = slideItems.length;
             let currentSlide = 0;
-
-            // Get current slide from transform
             const currentTransform = slideContainer.style.transform;
             if (currentTransform) {
               const match = currentTransform.match(/translateX\(([-\d.]+)%\)/);
@@ -1634,15 +1706,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentSlide = Math.round(-parseFloat(match[1]) / (100 / totalSlides));
               }
             }
-
             currentSlide = (currentSlide + 1) % totalSlides;
             const offset = -currentSlide * (100 / totalSlides);
             slideContainer.style.transform = `translateX(${offset}%)`;
           };
-
           sliderIntervalId = setIntervalWithCleanup(moveSlide, 2000);
         }
       }
+      sliderWrapperRestarts.forEach((restart) => restart());
     }
   });
 

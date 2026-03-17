@@ -92,6 +92,11 @@ npm run build        # Build once (manual)
 **For Price Sold Out Handling:**
 - If `.price-min-card-value` < 0 (e.g., -1): Replaced with the text from `.available-sold-out` or "Sold Out" if not available, hides dollar signs, spacer, max price, and "Starting at" text
 
+**For Card Image Slideshow:**
+- `.slider-wrapper` → container for image slides (e.g. inside `.images-collection`)
+- `.slide-wrapper` → each slide (inside `.w-dyn-items`)
+- When both exist and there are 2+ slides, displays as an auto-advancing slideshow
+
 ## 🏷️ Automatic Text Replacement
 
 **Studio Label Replacement:**
