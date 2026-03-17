@@ -378,11 +378,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const initSliderWrappers = () => {
     const wrappers = document.querySelectorAll('.slider-wrapper');
     wrappers.forEach((sliderWrapper) => {
-      const slideContainer = sliderWrapper.querySelector('.w-dyn-items');
-      const slideItems = slideContainer
-        ? Array.from(slideContainer.querySelectorAll('.slide-wrapper'))
-        : [];
-      if (!slideContainer || slideItems.length < 2) return;
+      const slideItems = Array.from(sliderWrapper.querySelectorAll('.slide-wrapper'));
+      if (slideItems.length < 2) return;
+
+      const slideContainer = slideItems[0].parentElement;
+      if (!slideContainer) return;
 
       sliderWrapper.style.overflow = 'hidden';
       sliderWrapper.style.position = 'relative';

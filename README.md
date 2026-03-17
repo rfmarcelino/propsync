@@ -94,7 +94,7 @@ npm run build        # Build once (manual)
 
 **For Card Image Slideshow:**
 - `.slider-wrapper` → container for image slides (e.g. inside `.images-collection`)
-- `.slide-wrapper` → each slide (inside `.w-dyn-items`)
+- `.slide-wrapper` → each slide (direct children of a common parent inside the wrapper)
 - When both exist and there are 2+ slides, displays as an auto-advancing slideshow
 
 ## 🏷️ Automatic Text Replacement
