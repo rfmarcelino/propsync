@@ -406,7 +406,8 @@ document.addEventListener('DOMContentLoaded', () => {
         goToSlide(currentSlide);
       };
 
-      const arrowBaseStyle = 'position:absolute;top:50%;transform:translateY(-50%);z-index:2;cursor:pointer;width:36px;height:36px;display:flex;align-items:center;justify-content:center;';
+      const arrowBaseStyle = 'position:absolute;top:50%;transform:translateY(-50%);z-index:2;cursor:pointer;width:36px;height:36px;display:flex;align-items:center;justify-content:center;pointer-events:none;';
+      const arrowHitStyle = 'width:24px;height:24px;display:flex;align-items:center;justify-content:center;pointer-events:auto;';
       const chevronSvg = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5"/></svg>';
 
       const leftArrow = document.createElement('div');
@@ -414,7 +415,10 @@ document.addEventListener('DOMContentLoaded', () => {
       leftArrow.setAttribute('role', 'button');
       leftArrow.setAttribute('aria-label', 'Previous slide');
       leftArrow.style.cssText = arrowBaseStyle + 'left:0;';
-      leftArrow.innerHTML = chevronSvg;
+      const leftHit = document.createElement('span');
+      leftHit.style.cssText = arrowHitStyle;
+      leftHit.innerHTML = chevronSvg;
+      leftArrow.appendChild(leftHit);
       sliderWrapper.appendChild(leftArrow);
 
       const rightArrow = document.createElement('div');
@@ -422,15 +426,22 @@ document.addEventListener('DOMContentLoaded', () => {
       rightArrow.setAttribute('role', 'button');
       rightArrow.setAttribute('aria-label', 'Next slide');
       rightArrow.style.cssText = arrowBaseStyle + 'right:0;';
-      rightArrow.innerHTML = chevronSvg;
-      rightArrow.style.transform = 'translateY(-50%) scaleX(-1)';
+      const rightHit = document.createElement('span');
+      rightHit.style.cssText = arrowHitStyle;
+      rightHit.innerHTML = chevronSvg;
+      rightHit.style.transform = 'scaleX(-1)';
+      rightArrow.appendChild(rightHit);
       sliderWrapper.appendChild(rightArrow);
 
-      addEventListenerWithCleanup(leftArrow, 'click', () => {
+      addEventListenerWithCleanup(leftHit, 'click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
         goToSlide(currentSlide);
       });
-      addEventListenerWithCleanup(rightArrow, 'click', () => {
+      addEventListenerWithCleanup(rightHit, 'click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         moveSlide();
       });
 
