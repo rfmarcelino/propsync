@@ -727,7 +727,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cardData.bed !== null) availableBedrooms.add(cardData.bed);
       // Exclude prices under $1 (sold out) from price range calculation
       if (cardData.priceMin !== null && cardData.priceMin >= 1) overallMinPrice = Math.min(overallMinPrice, cardData.priceMin);
-      if (cardData.priceMax !== null && cardData.priceMax >= 1) overallMaxPrice = Math.max(overallMaxPrice, cardData.priceMax);
+      // When max is 0 (placeholder / "starting at" only), use min as the upper-bound candidate for the slider
+      if (cardData.priceMax !== null && cardData.priceMax >= 1) {
+        overallMaxPrice = Math.max(overallMaxPrice, cardData.priceMax);
+      } else if (cardData.priceMax === 0 && cardData.priceMin !== null && cardData.priceMin >= 1) {
+        overallMaxPrice = Math.max(overallMaxPrice, cardData.priceMin);
+      }
       if (cardData.sqrMin !== null) overallMinSqr = Math.min(overallMinSqr, cardData.sqrMin);
       if (cardData.sqrMax !== null) overallMaxSqr = Math.max(overallMaxSqr, cardData.sqrMax);
 
