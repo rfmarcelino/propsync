@@ -1260,8 +1260,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filterButton) {
       addEventListenerWithCleanup(filterButton, 'click', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         applyFilters();
       });
+
+      // Also intercept the parent form's submit event to block Webflow/Turnstile
+      // from submitting the form when the filter button is clicked
+      const filterForm = filterButton.closest('form');
+      if (filterForm) {
+        addEventListenerWithCleanup(filterForm, 'submit', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          applyFilters();
+        });
+      }
     }
 
     // Attach reset button listener if it exists
