@@ -1636,8 +1636,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (priceMinValue && priceMaxValue) {
         const priceMinNum = parseInt(priceMinValue.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
         const priceMaxNum = parseInt(priceMaxValue.textContent.trim().replace(/[^0-9.-]+/g, ''), 10);
-        // Only mark sold out when min or max is negative; ignore max when it's 0 and min is valid
-        if (priceMinNum < 0 || priceMaxNum < 0) {
+        // Mark sold out when min is 0/negative, max is negative, or text was already replaced (NaN)
+        if (priceMinNum <= 0 || priceMaxNum < 0 || isNaN(priceMinNum)) {
           const container = priceContainer || wrapper;
           markPriceContainerAsSoldOut(container);
           isSoldOutCard = true;
