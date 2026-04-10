@@ -127,12 +127,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Replace price min value with sold out text from availability wrapper when available
     if (priceMinValue) {
-      const cardContainer = priceContainer.closest('.card-wrapper');
-      const soldOutEl = priceContainer.querySelector('.available-sold-out')
-        || (cardContainer ? cardContainer.querySelector('.available-sold-out') : null);
-      const soldOutText = soldOutEl && soldOutEl.textContent
-        ? soldOutEl.textContent.trim()
-        : '';
+      // Walk up the DOM to find the nearest ancestor containing .available-sold-out
+      let ancestor = priceContainer;
+      let soldOutEl = null;
+      while (ancestor && !soldOutEl) {
+        soldOutEl = ancestor.querySelector('.available-sold-out');
+        if (!soldOutEl) ancestor = ancestor.parentElement;
+      }
+      const soldOutText = soldOutEl ? soldOutEl.textContent.trim() : '';
       priceMinValue.textContent = soldOutText || 'Sold Out';
       priceMinValue.style.display = '';  // Make sure it's visible
     }
