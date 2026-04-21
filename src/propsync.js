@@ -697,6 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let overallMinSqr = Infinity;
     let overallMaxSqr = -Infinity;
     const availableBedrooms = new Set();
+    const availableProperties = new Set();
     const initialCardData = [];
 
     // Initialize card data and mark cards with negative prices as sold out
@@ -716,9 +717,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Don't return - continue processing the card
       }
 
+      const property = card.querySelector('.property-card-value')?.textContent?.trim() || null;
+
       const cardData = {
         element: card,
         bed: bed,
+        property: property,
         priceMin: priceMin,
         priceMax: priceMax,
         sqrMin: sqrMin,
@@ -727,6 +731,7 @@ document.addEventListener('DOMContentLoaded', () => {
       initialCardData.push(cardData);
 
       if (cardData.bed !== null) availableBedrooms.add(cardData.bed);
+      if (cardData.property) availableProperties.add(cardData.property);
       // Exclude prices under $1 (sold out) from price range calculation
       if (cardData.priceMin !== null && cardData.priceMin >= 1) overallMinPrice = Math.min(overallMinPrice, cardData.priceMin);
       // When max is 0 (placeholder / "starting at" only), use min as the upper-bound candidate for the slider
@@ -1121,6 +1126,38 @@ document.addEventListener('DOMContentLoaded', () => {
       wrapper.style.display = (!isNaN(value) && availableBedrooms.has(value)) ? '' : 'none';
     });
 
+    // Property filter: dynamically generate checkboxes from card data
+    let generatedPropertyCheckboxes = [];
+    const propertyTemplateWrapper = document.querySelector('.property-wrapper');
+    if (propertyTemplateWrapper && availableProperties.size > 0) {
+      const propertyContainer = propertyTemplateWrapper.parentElement;
+      const sortedProperties = Array.from(availableProperties).sort();
+      propertyTemplateWrapper.style.display = 'none';
+
+      sortedProperties.forEach(propName => {
+        const clone = propertyTemplateWrapper.cloneNode(true);
+        clone.style.display = '';
+
+        const valueEl = clone.querySelector('.property-value');
+        if (valueEl) valueEl.textContent = propName;
+
+        const checkbox = clone.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+          checkbox.checked = false;
+          generatedPropertyCheckboxes.push(checkbox);
+        }
+
+        const webflowCheckbox = clone.querySelector('.w-checkbox-input');
+        if (webflowCheckbox) webflowCheckbox.classList.remove('w--redirected-checked');
+
+        propertyContainer.appendChild(clone);
+      });
+
+      console.log(`🏠 Property filter: generated ${sortedProperties.length} checkbox(es)`, sortedProperties);
+    } else if (propertyTemplateWrapper) {
+      propertyTemplateWrapper.style.display = 'none';
+    }
+
     // Filter functionality with debouncing
     const applyFilters = debounce(() => {
       const selectedBedrooms = Array.from(bedroomCheckboxes)
@@ -1157,6 +1194,15 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .filter(val => !isNaN(val));
 
+      const selectedProperties = generatedPropertyCheckboxes
+        .filter(cb => cb.checked)
+        .map(cb => {
+          const wrapper = cb.closest('.property-wrapper');
+          const valueEl = wrapper?.querySelector('.property-value');
+          return valueEl?.textContent?.trim() || null;
+        })
+        .filter(val => val !== null);
+
       const priceMin = priceRangeContainer ? parseFloat(priceRangeContainer.querySelector('.price-min')?.textContent.replace(/[^0-9.]+/g, '')) || overallMinPrice : overallMinPrice;
       const priceMax = priceRangeContainer ? parseFloat(priceRangeContainer.querySelector('.price-max')?.textContent.replace(/[^0-9.]+/g, '')) || overallMaxPrice : overallMaxPrice;
       const sqrMin = sqrRangeContainer ? parseFloat(sqrRangeContainer.querySelector('.sqr-min')?.textContent.replace(/[^0-9.]+/g, '')) || overallMinSqr : overallMinSqr;
@@ -1169,6 +1215,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Bedroom filter
         if (selectedBedrooms.length > 0 && (cardData.bed === null || !selectedBedrooms.includes(cardData.bed))) {
+          isVisible = false;
+        }
+
+        // Property filter
+        if (isVisible && selectedProperties.length > 0 && (!cardData.property || !selectedProperties.includes(cardData.property))) {
           isVisible = false;
         }
 
@@ -1206,6 +1257,15 @@ document.addEventListener('DOMContentLoaded', () => {
       bedroomCheckboxes.forEach(cb => {
         cb.checked = false;
         const wrapper = cb.closest('.bedroom-wrapper');
+        const webflowCheckboxDiv = wrapper?.querySelector('.w-checkbox-input');
+        if (webflowCheckboxDiv) {
+          webflowCheckboxDiv.classList.remove('w--redirected-checked');
+        }
+      });
+
+      generatedPropertyCheckboxes.forEach(cb => {
+        cb.checked = false;
+        const wrapper = cb.closest('.property-wrapper');
         const webflowCheckboxDiv = wrapper?.querySelector('.w-checkbox-input');
         if (webflowCheckboxDiv) {
           webflowCheckboxDiv.classList.remove('w--redirected-checked');
@@ -1286,9 +1346,14 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Auto-apply when bedroom checkboxes change in auto-submit mode
+    // Auto-apply when checkboxes change in auto-submit mode
     if (autoSubmitMode) {
       bedroomCheckboxes.forEach(checkbox => {
+        addEventListenerWithCleanup(checkbox, 'change', () => {
+          applyFilters();
+        });
+      });
+      generatedPropertyCheckboxes.forEach(checkbox => {
         addEventListenerWithCleanup(checkbox, 'change', () => {
           applyFilters();
         });

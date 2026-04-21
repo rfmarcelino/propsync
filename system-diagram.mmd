@@ -47,6 +47,7 @@ graph TB
             TabMode["Tab Filtering Mode<br/>(if .propsync > .propsync-tabs exists)"]
             CheckboxMode[Checkbox Filter Mode]
             BedroomFilter[Bedroom Filter]
+            PropertyFilter["Property Filter<br/>(Dynamic Checkboxes)"]
             PriceSlider[Price Range Slider]
             SqrSlider[Square Footage Slider]
             ApplyBtn[Apply Button]
@@ -102,6 +103,7 @@ graph TB
     TabMode --> GenerateTabs
     GenerateTabs --> BedroomFilter
     CheckboxMode --> BedroomFilter
+    CheckboxMode --> PropertyFilter
     CheckboxMode --> PriceSlider
     CheckboxMode --> SqrSlider
     URLParam -->|Tab Mode| GenerateTabs
