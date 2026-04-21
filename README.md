@@ -54,6 +54,7 @@ npm run build        # Build once (manual)
 
 **For List Pages A & B (filtering with checkboxes/sliders):**
 - `.bedroom-wrapper` → `.bedroom-value`
+- `.property-wrapper` → `.property-value` (single template item; script clones one checkbox per unique `.property-card-value`)
 - `.price-range` → `.price-min-handler`, `.price-max-handler`, `.price-range-bar`, `.price-min`, `.price-max`
 - `.sqr-range` → `.sqr-min-handler`, `.sqr-max-handler`, `.sqr-range-bar`, `.sqr-min`, `.sqr-max`
 - `.button-filter`, `.button-reset`
@@ -82,6 +83,7 @@ npm run build        # Build once (manual)
 
 **For All Page Types (cards):**
 - `.card-wrapper` → `.bedroom-card-value`, `.bathroom-card-value`, `.sqr-min-card-value`, `.sqr-spacer`, `.sqr-max-card-value`, `.startingat`, `.price-min-dollar`, `.price-min-card-value`, `.price-spacer`, `.price-max-dollar`, `.price-max-card-value`
+- Optional for property filtering: `.property-card-value` (used to build and apply Property checkboxes)
 
 **For Availability Display (optional, for any card):**
 - `.availability-wrapper` → `.available-items` (count), `.available-text` (label), `.available-sold-out` (sold out text)
@@ -355,6 +357,7 @@ If the **`.button-filter`** button is missing from your page, the script automat
 ### How It Works
 Instead of requiring users to click a filter button, filters are applied automatically when:
 - ✅ A bedroom checkbox is checked/unchecked
+- ✅ A property checkbox is checked/unchecked
 - ✅ A price range slider is dragged
 - ✅ A square footage slider is dragged
 
