@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "chokidar": "^3.6.0",
-    "esbuild": "^0.20.2",
+    "esbuild": "^0.28.0",
     "fs-extra": "^11.2.0",
     "terser": "^5.31.1"
   },
@@ -19,7 +19,11 @@
     "type": "git",
     "url": "git+https://github.com/rfmarcelino/propsync.git"
   },
-  "keywords": ["propsync", "javascript", "webflow"],
+  "keywords": [
+    "propsync",
+    "javascript",
+    "webflow"
+  ],
   "author": "PropSync Team",
   "license": "MIT"
 }

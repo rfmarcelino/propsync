@@ -672,8 +672,24 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn('   📖 See README.md for full structure requirements\n');
     }
 
-    // Only require cards to exist - filterButton and resetButton are optional (auto-submit fallback)
-    if (!cards.length) return;
+    // When no cards exist, block buttons from submitting their parent form
+    if (!cards.length) {
+      [filterButton, resetButton].forEach(btn => {
+        if (!btn) return;
+        addEventListenerWithCleanup(btn, 'click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        });
+        const form = btn.closest('form');
+        if (form) {
+          addEventListenerWithCleanup(form, 'submit', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          });
+        }
+      });
+      return;
+    }
 
     console.log('✅ PropSync filtering initialized with', cards.length, 'cards');
 
