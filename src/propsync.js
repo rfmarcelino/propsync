@@ -187,6 +187,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // --- Shared range display helpers (cards, floorplan template, units) ---
+  const parseNumText = (el) => {
+    if (!el) return NaN;
+    return parseFloat(String(el.textContent).replace(/[^0-9.-]+/g, ''));
+  };
+
+  // Sqft: hide spacer + max when min and max are identical
+  const applySqrRangeDisplay = ({ min, max, spacer }) => {
+    if (!min || !max) return;
+    if (min.textContent.trim() === max.textContent.trim()) {
+      if (spacer) spacer.style.display = 'none';
+      max.style.display = 'none';
+    }
+  };
+
+  // Price: "Starting at $min" when max is missing/0/equal, otherwise "$min - $max"
+  const applyPriceRangeDisplay = ({ min, max, spacer, startingAt, minDollar, maxDollar }) => {
+    if (!min) return;
+    const minPrice = min.textContent.trim();
+    const maxPrice = max ? max.textContent.trim() : null;
+    const maxNum = maxPrice ? parseFloat(maxPrice.replace(/[^0-9.-]+/g, '')) : NaN;
+    const minNum = minPrice ? parseFloat(minPrice.replace(/[^0-9.-]+/g, '')) : NaN;
+    const useStartingAt = !maxPrice || minPrice === maxPrice || (maxNum === 0 && minNum > 0);
+    if (useStartingAt) {
+      if (spacer) spacer.style.display = 'none';
+      if (max) max.style.display = 'none';
+      if (maxDollar) maxDollar.style.display = 'none';
+      if (startingAt) startingAt.style.display = 'inline';
+      if (minDollar) minDollar.style.display = 'inline';
+    } else {
+      if (startingAt) startingAt.style.display = 'none';
+      if (spacer) spacer.style.display = 'inline';
+      if (max) max.style.display = 'inline';
+      if (maxDollar) maxDollar.style.display = 'inline';
+      if (minDollar) minDollar.style.display = 'inline';
+    }
+  };
+
   // --- Debug: Check for Duplicate Classes ---
   const checkForDuplicateClasses = () => {
     // Classes that should only appear once in the document
@@ -277,42 +315,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const sqrSpacer = document.querySelector('.sqr-spacer');
 
     if (sqrMinValue && sqrMaxValue && sqrSpacer) {
-      if (sqrMinValue.textContent === sqrMaxValue.textContent) {
-        sqrSpacer.style.display = 'none';
-        sqrMaxValue.style.display = 'none';
-      }
+      applySqrRangeDisplay({ min: sqrMinValue, max: sqrMaxValue, spacer: sqrSpacer });
     }
 
     // Price comparison
     const priceMinValue = document.querySelector('.price-min-card-value');
-    const priceMaxValue = document.querySelector('.price-max-card-value');
     const priceSpacer = document.querySelector('.price-spacer');
-    const startingAt = document.querySelector('.startingat');
-    const priceMinDollar = document.querySelector('.price-min-dollar');
-    const priceMaxDollar = document.querySelector('.price-max-dollar');
 
     if (priceMinValue && priceSpacer) {
-      const minPrice = priceMinValue.textContent.trim();
-      const maxPrice = priceMaxValue ? priceMaxValue.textContent.trim() : null;
-
-      // If max is 0 or missing, or prices equal → "Starting at" format
-      const maxNum = maxPrice ? parseFloat(String(maxPrice).replace(/[^0-9.-]+/g, '')) : NaN;
-      const minNum = minPrice ? parseFloat(String(minPrice).replace(/[^0-9.-]+/g, '')) : NaN;
-      const useStartingAt = !maxPrice || minPrice === maxPrice || (maxNum === 0 && minNum > 0);
-      if (useStartingAt) {
-        priceSpacer.style.display = 'none';
-        if (priceMaxValue) priceMaxValue.style.display = 'none';
-        if (priceMaxDollar) priceMaxDollar.style.display = 'none';
-        if (startingAt) startingAt.style.display = 'inline';
-        if (priceMinDollar) priceMinDollar.style.display = 'inline';
-      } else {
-        // Prices are different, hide "Starting at" and show full range
-        if (startingAt) startingAt.style.display = 'none';
-        priceSpacer.style.display = 'inline';
-        if (priceMaxValue) priceMaxValue.style.display = 'inline';
-        if (priceMaxDollar) priceMaxDollar.style.display = 'inline';
-        if (priceMinDollar) priceMinDollar.style.display = 'inline';
-      }
+      applyPriceRangeDisplay({
+        min: priceMinValue,
+        max: document.querySelector('.price-max-card-value'),
+        spacer: priceSpacer,
+        startingAt: document.querySelector('.startingat'),
+        minDollar: document.querySelector('.price-min-dollar'),
+        maxDollar: document.querySelector('.price-max-dollar')
+      });
     }
 
     // Image slider
@@ -1733,44 +1751,501 @@ document.addEventListener('DOMContentLoaded', () => {
       const sqrSpacer = wrapper.querySelector('.sqr-spacer');
 
       if (sqrMinValue && sqrMaxValue && sqrSpacer) {
-        if (sqrMinValue.textContent === sqrMaxValue.textContent) {
-          sqrSpacer.style.display = 'none';
-          sqrMaxValue.style.display = 'none';
-        }
+        applySqrRangeDisplay({ min: sqrMinValue, max: sqrMaxValue, spacer: sqrSpacer });
       }
 
       // Price comparison
       const priceSpacer = wrapper.querySelector('.price-spacer');
-      const priceMaxDollar = wrapper.querySelector('.price-max-dollar');
-      const startingAt = wrapper.querySelector('.startingat');
-      const priceMinDollar = wrapper.querySelector('.price-min-dollar');
 
       if (!isSoldOutCard && priceMinValue && priceSpacer) {
-        const minPrice = priceMinValue.textContent.trim();
-        const maxPrice = priceMaxValue ? priceMaxValue.textContent.trim() : null;
-
-        // If max is 0 or missing, or prices equal → "Starting at" format
-        const maxNum = maxPrice ? parseFloat(String(maxPrice).replace(/[^0-9.-]+/g, '')) : NaN;
-        const minNum = minPrice ? parseFloat(String(minPrice).replace(/[^0-9.-]+/g, '')) : NaN;
-        const useStartingAt = !maxPrice || minPrice === maxPrice || (maxNum === 0 && minNum > 0);
-        if (useStartingAt) {
-          priceSpacer.style.display = 'none';
-          if (priceMaxValue) priceMaxValue.style.display = 'none';
-          if (priceMaxDollar) priceMaxDollar.style.display = 'none';
-          if (startingAt) startingAt.style.display = 'inline';
-          if (priceMinDollar) priceMinDollar.style.display = 'inline';
-        } else {
-          // Prices are different, hide "Starting at" and show full range
-          if (startingAt) startingAt.style.display = 'none';
-          priceSpacer.style.display = 'inline';
-          if (priceMaxValue) priceMaxValue.style.display = 'inline';
-          if (priceMaxDollar) priceMaxDollar.style.display = 'inline';
-          if (priceMinDollar) priceMinDollar.style.display = 'inline';
-        }
+        applyPriceRangeDisplay({
+          min: priceMinValue,
+          max: priceMaxValue,
+          spacer: priceSpacer,
+          startingAt: wrapper.querySelector('.startingat'),
+          minDollar: wrapper.querySelector('.price-min-dollar'),
+          maxDollar: wrapper.querySelector('.price-max-dollar')
+        });
       }
 
       // Process availability wrapper
       processAvailabilityWrapper(wrapper);
+    });
+  };
+
+  // --- Units (available units per floorplan: popover / modal / accordion / inline) ---
+  //
+  // Component:  .propsync-units [data-units-display="popover|modal|accordion|inline"] [data-floorplan="slug"]
+  //               .units-trigger   (opens the panel; may contain .units-count)
+  //               .units-panel     (popover / modal body)
+  //                 .units-list    (rows go here; may be a Webflow collection list)
+  //                 .units-empty   (shown when there are no units)
+  //                 .units-close   (optional close button)
+  // Rows:       .unit-row (Webflow collection item), either inside the component's .units-list
+  //             (details page: list filtered by current floorplan) or inside a hidden
+  //             .units-source list (list page: all units, matched by data-floorplan / .unit-floorplan-value)
+  const UNITS_OPEN_CLASS = 'is-open';
+  const UNITS_MOBILE_BREAKPOINT = 768;
+  let openUnitsComponent = null;
+
+  const normalizeKey = (value) => (value || '').toString().trim().toLowerCase();
+
+  const injectUnitsStyles = () => {
+    if (document.getElementById('propsync-units-style')) return;
+    const style = document.createElement('style');
+    style.id = 'propsync-units-style';
+    // :where() keeps specificity at 0 so any Webflow class styling wins
+    style.textContent = `
+      :where(.units-panel.is-popover){position:fixed;z-index:1000;width:min(440px,calc(100vw - 16px));max-height:min(60vh,520px);overflow:auto;background:#fff;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.18);}
+      :where(.units-panel.is-sheet){position:fixed;z-index:1000;left:0;right:0;bottom:0;max-height:75vh;overflow:auto;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,.18);}
+      :where(.units-panel.is-modal){position:fixed;z-index:1001;top:50%;left:50%;transform:translate(-50%,-50%);width:min(760px,calc(100vw - 32px));max-height:85vh;overflow:auto;background:#fff;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+      :where(.propsync-units-backdrop){position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.5);}
+      :where(.unit-row.is-hidden){display:none !important;}
+    `;
+    document.head.appendChild(style);
+  };
+
+  const parseUnitDate = (el) => {
+    if (!el) return null;
+    const raw = (el.getAttribute('data-date') || el.textContent || '').trim();
+    if (!raw) return null;
+    let m = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+    m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) return new Date(+m[3], +m[1] - 1, +m[2]);
+    const d = new Date(raw);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  const formatNumericText = (el, asCurrency = false) => {
+    if (!el) return;
+    const text = el.textContent.trim();
+    if (!text || text.includes(',') || text.includes('$')) return;
+    const num = parseFloat(text.replace(/[^0-9.-]+/g, ''));
+    if (isNaN(num) || num < 0) return;
+    el.textContent = asCurrency ? formatCurrency(num) : formatNumber(num);
+  };
+
+  // Hide optional nested-list slots (specials, fees, features, lease terms) when empty
+  const hideEmptyUnitSlots = (row) => {
+    row.querySelectorAll('.unit-specials, .unit-fees, .unit-features, .unit-lease-terms, [data-units-optional]').forEach(slot => {
+      const hasItems = slot.querySelector('.w-dyn-item');
+      const onlyEmptyState = slot.querySelector('.w-dyn-empty') && !hasItems;
+      if (onlyEmptyState || !slot.textContent.trim()) slot.style.display = 'none';
+    });
+  };
+
+  // Prepare a unit row once: format values, ranges, dates, apply link; return sortable data
+  const processUnitRow = (row, options) => {
+    if (row._propsyncUnit) return row._propsyncUnit;
+
+    const q = (sel) => row.querySelector(sel);
+    const priceMinEl = q('.unit-price-min-value');
+    const priceMaxEl = q('.unit-price-max-value');
+    const priceMin = parseNumText(priceMinEl);
+    const priceMax = parseNumText(priceMaxEl);
+
+    [priceMinEl, priceMaxEl, q('.unit-sqr-min-value'), q('.unit-sqr-max-value')].forEach(el => formatNumericText(el));
+    row.querySelectorAll('.unit-fee-amount-value, .unit-lease-rent-value').forEach(el => formatNumericText(el, true));
+
+    applySqrRangeDisplay({ min: q('.unit-sqr-min-value'), max: q('.unit-sqr-max-value'), spacer: q('.unit-sqr-spacer') });
+    applyPriceRangeDisplay({
+      min: priceMinEl,
+      max: priceMaxEl,
+      spacer: q('.unit-price-spacer'),
+      startingAt: q('.unit-startingat'),
+      minDollar: q('.unit-price-min-dollar'),
+      maxDollar: q('.unit-price-max-dollar')
+    });
+
+    // Available date: today or earlier → "Available Now"
+    const dateEl = q('.unit-available-date');
+    const date = parseUnitDate(dateEl);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const availableNow = !!date && date <= today;
+    if (dateEl && availableNow) dateEl.textContent = options.availableNowText;
+    row.classList.toggle('is-available-now', availableNow);
+
+    // Apply links on rows fetched from paginated pages never saw the global [applylink] pass
+    row.querySelectorAll('[applylink]').forEach(btn => {
+      const link = btn.getAttribute('applylink');
+      if (link) btn.setAttribute('href', link);
+    });
+
+    hideEmptyUnitSlots(row);
+
+    const keyAttr = row.getAttribute('data-floorplan');
+    const keyEl = q('.unit-floorplan-value');
+    const data = {
+      element: row,
+      key: normalizeKey(keyAttr || (keyEl ? keyEl.textContent : '')),
+      name: (q('.unit-name-value')?.textContent || '').trim(),
+      priceMin: isNaN(priceMin) ? null : priceMin,
+      date: date ? (availableNow ? today.getTime() : date.getTime()) : Infinity,
+      soldOut: !isNaN(priceMin) && priceMin <= 0
+    };
+    row._propsyncUnit = data;
+    return data;
+  };
+
+  const getUnitsOptions = (component) => ({
+    display: (component.getAttribute('data-units-display') || (component.closest('.card-wrapper') ? 'popover' : 'modal')).toLowerCase(),
+    sort: (component.getAttribute('data-units-sort') || 'date').toLowerCase(),
+    availableNowText: component.getAttribute('data-available-now-text') || 'Available Now',
+    showSoldOut: component.hasAttribute('data-units-show-sold-out'),
+    hideEmpty: component.hasAttribute('data-units-hide-empty'),
+    syncCount: component.hasAttribute('data-units-sync-count')
+  });
+
+  const getComponentKey = (component) => {
+    const attr = component.getAttribute('data-floorplan');
+    if (attr) return normalizeKey(attr);
+    const scope = component.closest('.card-wrapper') || component;
+    const el = scope.querySelector('.floorplan-key-value');
+    return el ? normalizeKey(el.textContent) : '';
+  };
+
+  const sortUnits = (units, sort) => {
+    const byPrice = (a, b) => (a.priceMin ?? Infinity) - (b.priceMin ?? Infinity);
+    const byName = (a, b) => a.name.localeCompare(b.name, undefined, { numeric: true });
+    if (sort === 'price') return units.sort((a, b) => byPrice(a, b) || a.date - b.date);
+    if (sort === 'name') return units.sort(byName);
+    if (sort === 'none') return units;
+    return units.sort((a, b) => a.date - b.date || byPrice(a, b) || byName(a, b));
+  };
+
+  // Query inside the component and inside its panel (the panel lives in <body> while open)
+  const queryUnitsComponent = (component, selector) => {
+    const results = Array.from(component.querySelectorAll(selector));
+    const panel = component._propsyncUnitsUI?.panel;
+    if (panel && !component.contains(panel)) {
+      if (panel.matches(selector)) results.push(panel);
+      results.push(...panel.querySelectorAll(selector));
+    }
+    return results;
+  };
+
+  // Place, filter, sort and count the rows of one component
+  const renderUnitsComponent = (component, sourceUnitsByKey) => {
+    const options = getUnitsOptions(component);
+    const list = queryUnitsComponent(component, '.units-list')[0] || null;
+    const target = list ? (list.querySelector('.w-dyn-items') || list) : null;
+
+    const ownUnits = queryUnitsComponent(component, '.unit-row').map(row => processUnitRow(row, options));
+    const key = getComponentKey(component);
+    const sourceUnits = (key && sourceUnitsByKey.get(key)) || [];
+
+    // Source rows are moved (not cloned) into this component, so each unit renders once
+    const all = [...ownUnits];
+    sourceUnits.forEach(unit => {
+      if (!all.includes(unit)) all.push(unit);
+    });
+
+    const visible = [];
+    all.forEach(unit => {
+      const hide = unit.soldOut && !options.showSoldOut;
+      unit.element.classList.toggle('is-hidden', hide);
+      if (!hide) visible.push(unit);
+    });
+
+    if (target) {
+      sortUnits(visible, options.sort).forEach(unit => target.appendChild(unit.element));
+      all.filter(u => !visible.includes(u)).forEach(unit => target.appendChild(unit.element));
+    }
+
+    const count = visible.length;
+    queryUnitsComponent(component, '.units-count').forEach(el => { el.textContent = count; });
+    component.classList.toggle('is-empty', count === 0);
+    queryUnitsComponent(component, '.units-empty').forEach(el => { el.style.display = count === 0 ? '' : 'none'; });
+    if (list) list.style.display = count === 0 ? 'none' : '';
+    if (options.hideEmpty) component.style.display = count === 0 ? 'none' : '';
+
+    if (options.syncCount) {
+      const card = component.closest('.card-wrapper');
+      const availableItems = card?.querySelector('.availability-wrapper .available-items');
+      if (availableItems) {
+        availableItems.textContent = count;
+        processAvailabilityWrapper(card);
+      }
+    }
+
+    return count;
+  };
+
+  // --- Open / close ---
+  const positionUnitsPopover = (component) => {
+    const { panel, trigger } = component._propsyncUnitsUI;
+    const isMobile = window.innerWidth < UNITS_MOBILE_BREAKPOINT;
+    panel.classList.toggle('is-sheet', isMobile);
+    panel.classList.toggle('is-popover', !isMobile);
+    // Positioning is inline so site-level .units-panel styles can't override it
+    panel.style.position = 'fixed';
+    panel.style.zIndex = '1000';
+    if (isMobile) {
+      Object.assign(panel.style, { top: 'auto', left: '0px', right: '0px', bottom: '0px' });
+      return;
+    }
+    panel.style.right = panel.style.bottom = 'auto';
+    const rect = trigger.getBoundingClientRect();
+    const gap = 8;
+    const width = panel.offsetWidth;
+    const height = panel.offsetHeight;
+    let left = Math.min(Math.max(gap, rect.left), window.innerWidth - width - gap);
+    let top = rect.bottom + gap;
+    if (top + height > window.innerHeight - gap && rect.top - height - gap > gap) {
+      top = rect.top - height - gap; // flip above the trigger
+    }
+    panel.style.left = `${Math.max(gap, left)}px`;
+    panel.style.top = `${Math.max(gap, top)}px`;
+  };
+
+  const getFocusable = (root) => Array.from(root.querySelectorAll(
+    'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
+  )).filter(el => el.offsetParent !== null || el === document.activeElement);
+
+  const closeUnits = (component, restoreFocus = true) => {
+    const ui = component?._propsyncUnitsUI;
+    if (!ui || !component.classList.contains(UNITS_OPEN_CLASS)) return;
+    const { panel, trigger, placeholder, display } = ui;
+
+    component.classList.remove(UNITS_OPEN_CLASS);
+    trigger.setAttribute('aria-expanded', 'false');
+
+    if (display === 'accordion') {
+      panel.style.maxHeight = '0px';
+      panel.style.opacity = '0';
+    } else {
+      panel.style.display = 'none';
+      panel.classList.remove(UNITS_OPEN_CLASS, 'is-popover', 'is-sheet', 'is-modal');
+      ['position', 'zIndex', 'top', 'left', 'right', 'bottom', 'transform'].forEach(prop => { panel.style[prop] = ''; });
+      if (placeholder.parentNode) placeholder.parentNode.insertBefore(panel, placeholder);
+      if (ui.backdrop) {
+        ui.backdrop.remove();
+        ui.backdrop = null;
+      }
+      document.documentElement.style.overflow = ui.prevOverflow || '';
+    }
+
+    if (openUnitsComponent === component) openUnitsComponent = null;
+    if (restoreFocus) trigger.focus({ preventScroll: true });
+  };
+
+  const openUnits = (component) => {
+    const ui = component._propsyncUnitsUI;
+    if (!ui) return;
+    if (openUnitsComponent && openUnitsComponent !== component) closeUnits(openUnitsComponent, false);
+
+    const { panel, trigger, display } = ui;
+    component.classList.add(UNITS_OPEN_CLASS);
+    trigger.setAttribute('aria-expanded', 'true');
+
+    if (display === 'accordion') {
+      panel.style.maxHeight = panel.scrollHeight + 'px';
+      panel.style.opacity = '1';
+      // Grow an enclosing (already open) bedroom accordion so the units aren't clipped
+      const outer = component.closest('.accordion_answer');
+      if (outer && outer.style.maxHeight && outer.style.maxHeight !== '0px') {
+        outer.style.maxHeight = (outer.scrollHeight + panel.scrollHeight) + 'px';
+      }
+      return;
+    }
+
+    // Popover and modal are moved to <body> so card overflow/transform can't clip them
+    document.body.appendChild(panel);
+    panel.classList.add(UNITS_OPEN_CLASS);
+    panel.style.display = 'block';
+
+    if (display === 'modal') {
+      ui.backdrop = document.createElement('div');
+      ui.backdrop.className = 'propsync-units-backdrop';
+      document.body.insertBefore(ui.backdrop, panel);
+      panel.classList.add('is-modal');
+      Object.assign(panel.style, { position: 'fixed', zIndex: '1001', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' });
+      ui.prevOverflow = document.documentElement.style.overflow;
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      positionUnitsPopover(component);
+    }
+
+    openUnitsComponent = component;
+    const focusTarget = panel.querySelector('.units-close') || getFocusable(panel)[0] || panel;
+    focusTarget.focus({ preventScroll: true });
+  };
+
+  const setupUnitsComponent = (component, index) => {
+    const options = getUnitsOptions(component);
+    const trigger = component.querySelector('.units-trigger');
+    const panel = component.querySelector('.units-panel');
+
+    if (options.display === 'inline' || !trigger || !panel) {
+      if (options.display !== 'inline') {
+        console.warn('⚠️ PropSync Units: .propsync-units needs .units-trigger and .units-panel', component);
+      }
+      return;
+    }
+
+    const panelId = panel.id || `propsync-units-panel-${index}`;
+    panel.id = panelId;
+    panel.setAttribute('tabindex', '-1');
+    if (options.display === 'modal') {
+      panel.setAttribute('role', 'dialog');
+      panel.setAttribute('aria-modal', 'true');
+    }
+
+    trigger.setAttribute('aria-controls', panelId);
+    trigger.setAttribute('aria-expanded', 'false');
+    if (!/^(A|BUTTON)$/.test(trigger.tagName)) {
+      trigger.setAttribute('role', 'button');
+      trigger.setAttribute('tabindex', '0');
+    }
+
+    if (options.display === 'accordion') {
+      panel.style.overflow = 'hidden';
+      panel.style.maxHeight = '0px';
+      panel.style.opacity = '0';
+      panel.style.transition = 'max-height 0.3s ease, opacity 0.3s ease';
+    } else {
+      panel.style.display = 'none';
+    }
+
+    component._propsyncUnitsUI = {
+      trigger,
+      panel,
+      display: options.display,
+      placeholder: document.createComment('propsync-units-panel'),
+      backdrop: null
+    };
+    panel.parentNode.insertBefore(component._propsyncUnitsUI.placeholder, panel);
+    panel._propsyncUnitsComponent = component;
+  };
+
+  // Webflow paginated source lists: follow "Next" links to collect every unit (100 per page cap)
+  const fetchPaginatedUnitRows = async (sourceList, sourceIndex) => {
+    const rows = [];
+    let next = sourceList.querySelector('a.w-pagination-next');
+    let pages = 0;
+    const seen = new Set();
+    while (next && next.href && !seen.has(next.href) && pages < 20) {
+      seen.add(next.href);
+      pages++;
+      try {
+        const res = await fetch(next.href, { credentials: 'same-origin' });
+        if (!res.ok) break;
+        const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+        const remoteSource = doc.querySelectorAll('.units-source')[sourceIndex];
+        if (!remoteSource) break;
+        remoteSource.querySelectorAll('.unit-row').forEach(row => rows.push(document.importNode(row, true)));
+        next = remoteSource.querySelector('a.w-pagination-next');
+      } catch (err) {
+        console.warn('⚠️ PropSync Units: failed to fetch paginated units', err);
+        break;
+      }
+    }
+    return rows;
+  };
+
+  const initUnits = () => {
+    const components = Array.from(document.querySelectorAll('.propsync-units'));
+    if (!components.length) return;
+
+    injectUnitsStyles();
+
+    const sourceLists = Array.from(document.querySelectorAll('.units-source'));
+    const sourceUnitsByKey = new Map();
+    const addSourceRows = (rows, list) => {
+      const availableNowText = list.getAttribute('data-available-now-text') || 'Available Now';
+      rows.forEach(row => {
+        const unit = processUnitRow(row, { availableNowText });
+        if (!unit.key) return;
+        if (!sourceUnitsByKey.has(unit.key)) sourceUnitsByKey.set(unit.key, []);
+        sourceUnitsByKey.get(unit.key).push(unit);
+      });
+    };
+
+    // Source lists stay hidden; their rows get moved into matching components
+    sourceLists.forEach(list => {
+      list.style.display = 'none';
+      list.setAttribute('aria-hidden', 'true');
+      addSourceRows(Array.from(list.querySelectorAll('.unit-row')), list);
+    });
+
+    const renderAll = () => {
+      let total = 0;
+      components.forEach(c => { total += renderUnitsComponent(c, sourceUnitsByKey); });
+      return total;
+    };
+
+    components.forEach(setupUnitsComponent);
+    const total = renderAll();
+    console.log(`🏢 PropSync Units: ${components.length} component(s), ${total} unit(s) shown`);
+
+    // Delegated events survive accordion-mode cloning/moving of cards
+    addEventListenerWithCleanup(document, 'click', (e) => {
+      const trigger = e.target.closest('.units-trigger');
+      const component = trigger?.closest('.propsync-units');
+      if (component?._propsyncUnitsUI) {
+        e.preventDefault();
+        e.stopPropagation();
+        component.classList.contains(UNITS_OPEN_CLASS) ? closeUnits(component) : openUnits(component);
+        return;
+      }
+      if (!openUnitsComponent) return;
+      const { panel, display } = openUnitsComponent._propsyncUnitsUI;
+      if (e.target.closest('.units-close')) {
+        e.preventDefault();
+        closeUnits(openUnitsComponent);
+        return;
+      }
+      if (display !== 'accordion' && !panel.contains(e.target)) closeUnits(openUnitsComponent, false);
+    });
+
+    addEventListenerWithCleanup(document, 'keydown', (e) => {
+      const trigger = e.target.closest?.('.units-trigger[role="button"]');
+      if (trigger && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        trigger.click();
+        return;
+      }
+      if (!openUnitsComponent) return;
+      const { panel, display } = openUnitsComponent._propsyncUnitsUI;
+      if (e.key === 'Escape') {
+        closeUnits(openUnitsComponent);
+      } else if (e.key === 'Tab' && display === 'modal') {
+        // Keep keyboard focus inside the modal
+        const focusable = getFocusable(panel);
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    });
+
+    const reposition = () => {
+      if (openUnitsComponent && openUnitsComponent._propsyncUnitsUI.display === 'popover') {
+        positionUnitsPopover(openUnitsComponent);
+      }
+    };
+    addEventListenerWithCleanup(window, 'resize', reposition);
+    addEventListenerWithCleanup(window, 'scroll', reposition, { passive: true });
+
+    // Pull remaining pages of paginated source lists, then re-render
+    sourceLists.forEach((list, index) => {
+      if (!list.querySelector('a.w-pagination-next')) return;
+      fetchPaginatedUnitRows(list, index).then(rows => {
+        if (!rows.length) return;
+        const itemsContainer = list.querySelector('.w-dyn-items') || list;
+        rows.forEach(row => itemsContainer.appendChild(row));
+        addSourceRows(rows, list);
+        const updated = renderAll();
+        console.log(`🏢 PropSync Units: loaded ${rows.length} more unit(s) from pagination, ${updated} shown`);
+      });
     });
   };
 
@@ -1787,6 +2262,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPageTemplate();
   initSliderWrappers();
   replaceZeroBedroomWithStudio();
+  initUnits(); // Before accordion/filtering: unit count can feed .available-items
   const accordionModeActive = initAccordionFunctionality(); // Must run BEFORE initListPageFiltering to read original prices
   initListPageFiltering(accordionModeActive);
   initCardComparisons();

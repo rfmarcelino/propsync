@@ -11,7 +11,7 @@ npm run watch      # Same, but re-builds on file save
 npm run serve      # Static server at localhost:3000 serving dist/
 ```
 
-No test suite exists. Verify changes manually via `debug.html` in a browser.
+No test suite exists. Verify changes manually via `debug.html` / `debug-units.html` in a browser.
 
 ## Architecture
 
@@ -33,9 +33,12 @@ The script auto-detects which mode to activate based on DOM classes present:
 
 Only one mode runs per page. Tab mode takes priority over checkbox mode.
 
+**Units** (`.propsync-units`) is independent of the modes above and runs before them (`initUnits()`), so unit counts can feed `.available-items`. Rows come from the component's own list (details page) or from a hidden `.units-source` list matched by floorplan key (list page). Popover/modal panels are portaled to `<body>` while open; click/keydown are delegated on `document` so accordion-mode card moves don't break them. Fixture: `debug-units.html` (serve repo root, e.g. `python3 -m http.server 4000`).
+
 ### Key patterns
 
 - **Card data lives in the DOM**: values like bedroom count and price are read from `.bedroom-card-value`, `.price-min-card-value`, etc. inside each `.card-wrapper`.
+- **Range display**: `applyPriceRangeDisplay` / `applySqrRangeDisplay` hold the "Starting at" vs "$min - $max" and equal-sqft rules, shared by cards, the floorplan template page and unit rows.
 - **Sold-out detection**: price < 0 (e.g., `-1`) signals sold out; `markPriceContainerAsSoldOut()` swaps in text from `.available-sold-out` (walking up the DOM to find it).
 - **Availability display**: `processAvailabilityWrapper()` handles 0 / 1-9 / 9+ counts on `.availability-wrapper`.
 - **Studio label**: bedroom value `0` is displayed as "Studio"; siblings containing "Bedroom" text are hidden.

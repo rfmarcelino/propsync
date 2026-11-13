@@ -271,6 +271,60 @@ If the parameter value doesn't match any available filter:
 6. Hides the original template
 7. Inserts cloned accordions sorted by bedroom count (ascending)
 
+## 🏢 Units (available units per floorplan)
+
+Shows the **Propsync - Units** collection (`propsync-units`) for a floorplan as a **popover** (list page cards), **modal** or **accordion** (floorplan details page), or **inline** list. Runs on any page that has `.propsync-units`, alongside whichever filtering mode is active. Test fixture: `debug-units.html`.
+
+### Component
+
+```html
+<div class="propsync-units" data-units-display="popover" data-floorplan="{floorplan slug}">
+  <button class="units-trigger">See availability (<span class="units-count"></span>)</button>
+  <div class="units-panel">
+    <button class="units-close">×</button>            <!-- optional -->
+    <div class="units-list"> … .unit-row items … </div>
+    <div class="units-empty">No units available right now.</div>
+  </div>
+</div>
+```
+
+| Attribute on `.propsync-units` | Values | Default |
+|---|---|---|
+| `data-units-display` | `popover`, `modal`, `accordion`, `inline` | `popover` inside a `.card-wrapper`, otherwise `modal` |
+| `data-floorplan` | floorplan key (slug) used to pull rows from `.units-source` | falls back to text of `.floorplan-key-value` inside the card |
+| `data-units-sort` | `date`, `price`, `name`, `none` | `date` (then price, then name) |
+| `data-available-now-text` | label for dates ≤ today | `Available Now` |
+| `data-units-show-sold-out` | (flag) keep units with price ≤ 0 | hidden |
+| `data-units-hide-empty` | (flag) hide the whole component when 0 units | shows `.units-empty` |
+| `data-units-sync-count` | (flag) write unit count into the card's `.available-items` | off |
+
+- **Popover**: moved to `<body>` and `position: fixed` next to the trigger, so it never shifts the layout or gets clipped by the card. Flips above the trigger when there's no room below. Below 768px it becomes a bottom sheet.
+- **Modal**: backdrop, scroll lock, focus trap, Esc / backdrop / `.units-close` closes.
+- **Accordion**: in-flow expand (grows an enclosing bedroom accordion if needed).
+- State classes: `.propsync-units.is-open`, `.propsync-units.is-empty`, `.unit-row.is-available-now`, panel `.is-popover` / `.is-sheet` / `.is-modal`.
+- Default panel look (white, shadow, radius, max-height + scroll) is injected with zero specificity (`:where()`), so any Webflow styling on `.units-panel` wins. Positioning is inline and always applied.
+- To avoid a flash before the script runs, add to site head: `<style>.propsync-units:not(.is-open) .units-panel{display:none}</style>` (skip for `accordion`/`inline`).
+
+### Unit row (`.unit-row` on the Collection Item)
+
+| Class | Field | Notes |
+|---|---|---|
+| `.unit-name-value` | name / number | used for `name` sort |
+| `.unit-sqr-min-value`, `.unit-sqr-spacer`, `.unit-sqr-max-value` | min / max sqft | max + spacer hidden when equal |
+| `.unit-startingat`, `.unit-price-min-dollar`, `.unit-price-min-value`, `.unit-price-spacer`, `.unit-price-max-dollar`, `.unit-price-max-value` | min / max rent | same "Starting at" vs range rules as cards; min ≤ 0 = unavailable (hidden) |
+| `.unit-available-date` | available-date | ≤ today → "Available Now"; otherwise Webflow's formatted date. Parses `YYYY-MM-DD`, `MM/DD/YYYY` or any `Date`-parsable text; `data-date` attribute wins if present |
+| `[applylink]` | Apply Link | same as everywhere: copied to `href` |
+| `.unit-floorplan-value` or `data-floorplan` attr | Floorplan → slug | only needed for rows in `.units-source` |
+| `.unit-specials`, `.unit-fees`, `.unit-features`, `.unit-lease-terms`, `[data-units-optional]` | nested lists (planned) | hidden when empty, so they can sit in the template before Propsync syncs them |
+| `.unit-fee-amount-value`, `.unit-lease-rent-value` | fee amount / lease rent | formatted as currency |
+
+### Where rows come from
+
+- **Floorplan details page** (template page): put a Units Collection List *inside* `.units-list`, filtered by *Floorplan = Current Floorplan*. No key needed.
+- **Floorplan list page**: Webflow can't nest units inside a floorplan card (units reference the floorplan, not the other way round). Add **one** Units Collection List anywhere on the page with class `.units-source` (hidden by the script). Each row carries its floorplan slug (`data-floorplan` bound to *Floorplan: Slug*, or a hidden `.unit-floorplan-value` text). Each card's `.propsync-units` carries the same slug. The script moves matching rows into each card.
+  - Webflow lists cap at 100 items. Turn on **pagination** on the source list and the script fetches the remaining pages automatically (up to 20 pages), or stack several `.units-source` lists with offsets.
+  - Keep nested lists (fees, specials) inside the source list's items. One level of nesting works because the source list itself is top level.
+
 ## 🔄 Workflow
 
 ### For Developers

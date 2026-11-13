@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PropSync Units – debug fixture</title>
+  <!--
+    Fixture for the Units module. Serve the repo root and open /debug-units.html:
+      python3 -m http.server 4000
+    Mirrors the Webflow markup contract described in README.md ("Units").
+  -->
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; background: #f4f4f2; color: #222; }
+    h2 { margin-top: 48px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+    .card-wrapper { background: #fff; border-radius: 8px; padding: 16px; overflow: hidden; transform: translateZ(0); }
+    .units-trigger { margin-top: 12px; padding: 8px 12px; border: 1px solid #222; background: none; cursor: pointer; border-radius: 4px; }
+    .units-panel { padding: 16px; }
+    .units-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .unit-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid #eee; font-size: 14px; }
+    .unit-row .unit-specials { grid-column: 1 / -1; font-size: 12px; color: #2a7a2a; }
+    .units-close { border: 0; background: none; font-size: 20px; cursor: pointer; }
+    .details { background: #fff; padding: 24px; border-radius: 8px; max-width: 640px; }
+  </style>
+</head>
+<body>
+
+<h1>PropSync Units fixture</h1>
+
+<!-- ============ 1. List page: floorplan cards + popover, units from hidden source list ============ -->
+<h2>1. Floorplan list → popover (source list)</h2>
+<div class="grid">
+
+  <div class="card-wrapper">
+    <h3>Zilker</h3>
+    <div><span class="bedroom-card-value">0</span> <span>Bedroom</span></div>
+    <div class="price-range">
+      <span class="startingat">Starting at </span><span class="price-min-dollar">$</span><span class="price-min-card-value">2349</span><span class="price-spacer"> - </span><span class="price-max-dollar">$</span><span class="price-max-card-value">3074</span>
+    </div>
+    <div class="availability-wrapper"><span class="available-items">12</span> <span class="available-text">available</span> <span class="available-sold-out">Sold Out</span></div>
+    <div class="propsync-units" data-floorplan="zilker" data-units-sync-count>
+      <button class="units-trigger">See availability (<span class="units-count">0</span>)</button>
+      <div class="units-panel">
+        <div class="units-panel-header"><strong>Available units</strong><button class="units-close" aria-label="Close">×</button></div>
+        <div class="units-list"></div>
+        <div class="units-empty">No units available right now.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-wrapper">
+    <h3>Barton</h3>
+    <div><span class="bedroom-card-value">1</span> <span>Bedroom</span></div>
+    <div class="price-range">
+      <span class="startingat">Starting at </span><span class="price-min-dollar">$</span><span class="price-min-card-value">1899</span><span class="price-spacer"> - </span><span class="price-max-dollar">$</span><span class="price-max-card-value">0</span>
+    </div>
+    <!-- key read from text instead of attribute -->
+    <div class="floorplan-key-value" style="display:none">barton</div>
+    <div class="propsync-units">
+      <button class="units-trigger">See availability (<span class="units-count">0</span>)</button>
+      <div class="units-panel">
+        <div class="units-panel-header"><strong>Available units</strong><button class="units-close" aria-label="Close">×</button></div>
+        <div class="units-list"></div>
+        <div class="units-empty">No units available right now.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-wrapper">
+    <h3>Mueller (no units)</h3>
+    <div><span class="bedroom-card-value">2</span> <span>Bedroom</span></div>
+    <div class="price-range">
+      <span class="startingat">Starting at </span><span class="price-min-dollar">$</span><span class="price-min-card-value">-1</span><span class="price-spacer"> - </span><span class="price-max-dollar">$</span><span class="price-max-card-value">-1</span>
+    </div>
+    <div class="propsync-units" data-floorplan="mueller">
+      <button class="units-trigger">See availability (<span class="units-count">0</span>)</button>
+      <div class="units-panel">
+        <div class="units-panel-header"><strong>Available units</strong><button class="units-close" aria-label="Close">×</button></div>
+        <div class="units-list"></div>
+        <div class="units-empty">No units available right now. Join the waitlist!</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-wrapper">
+    <h3>Hidden-when-empty</h3>
+    <div><span class="bedroom-card-value">3</span> <span>Bedroom</span></div>
+    <div class="propsync-units" data-floorplan="nothing-here" data-units-hide-empty>
+      <button class="units-trigger">You should NOT see this button</button>
+      <div class="units-panel"><div class="units-list"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden source list: all units on the page (Webflow: Units collection list, class units-source) -->
+<div class="units-source w-dyn-list">
+  <div role="list" class="w-dyn-items">
+    <div role="listitem" class="w-dyn-item unit-row" data-floorplan="zilker">
+      <div class="unit-name-value">#3415</div>
+      <div><span class="unit-sqr-min-value">418</span><span class="unit-sqr-spacer"> - </span><span class="unit-sqr-max-value">418</span> sq ft</div>
+      <div><span class="unit-startingat">From </span><span class="unit-price-min-dollar">$</span><span class="unit-price-min-value">2689</span><span class="unit-price-spacer"> - </span><span class="unit-price-max-dollar">$</span><span class="unit-price-max-value">2945</span></div>
+      <div><span class="unit-available-date">2027-01-29</span> <a applylink="https://example.com/apply/3415" class="unit-apply">Apply</a></div>
+      <div class="unit-specials w-dyn-list"><div class="w-dyn-empty">No items found.</div></div>
+    </div>
+    <div role="listitem" class="w-dyn-item unit-row" data-floorplan="zilker">
+      <div class="unit-name-value">#1915</div>
+      <div><span class="unit-sqr-min-value">418</span><span class="unit-sqr-spacer"> - </span><span class="unit-sqr-max-value">430</span> sq ft</div>
+      <div><span class="unit-startingat">From </span><span class="unit-price-min-dollar">$</span><span class="unit-price-min-value">2349</span><span class="unit-price-spacer"> - </span><span class="unit-price-max-dollar">$</span><span class="unit-price-max-value">2349</span></div>
+      <div><span class="unit-available-date">10/01/2026</span> <a applylink="https://example.com/apply/1915" class="unit-apply">Apply</a></div>
+      <div class="unit-specials w-dyn-list"><div class="w-dyn-items"><div class="w-dyn-item">6 weeks free on 14-month lease</div></div></div>
+    </div>
+    <div role="listitem" class="w-dyn-item unit-row" data-floorplan="zilker">
+      <div class="unit-name-value">#9999 (sold out → hidden)</div>
+      <div><span class="unit-sqr-min-value">418</span></div>
+      <div><span class="unit-price-min-dollar">$</span><span class="unit-price-min-value">-1</span></div>
+      <div><span class="unit-available-date">2026-12-01</span></div>
+    </div>
+    <div role="listitem" class="w-dyn-item unit-row">
+      <div class="unit-floorplan-value" style="display:none">Barton</div>
+      <div class="unit-name-value">#204</div>
+      <div><span class="unit-sqr-min-value">712</span> sq ft</div>
+      <div><span class="unit-startingat">From </span><span class="unit-price-min-dollar">$</span><span class="unit-price-min-value">1899</span><span class="unit-price-spacer"> - </span><span class="unit-price-max-dollar">$</span><span class="unit-price-max-value">0</span></div>
+      <div><span class="unit-available-date">Dec 15, 2026</span> <a applylink="https://example.com/apply/204" class="unit-apply">Apply</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 2. Floorplan details page: modal with own (filtered) collection list ============ -->
+<h2>2. Floorplan details → modal</h2>
+<div class="details">
+  <h3>Zilker details</h3>
+  <div class="propsync-units" data-units-display="modal" data-units-sort="price">
+    <button class="units-trigger">View all available units (<span class="units-count">0</span>)</button>
+    <div class="units-panel">
+      <div class="units-panel-header"><strong>Zilker – available units</strong><button class="units-close" aria-label="Close">×</button></div>
+      <div class="units-list w-dyn-list">
+        <div role="list" class="w-dyn-items">
+          <div role="listitem" class="w-dyn-item unit-row">
+            <div class="unit-name-value">#4015</div>
+            <div><span class="unit-sqr-min-value">418</span> sq ft</div>
+            <div><span class="unit-price-min-dollar">$</span><span class="unit-price-min-value">3074</span><span class="unit-price-spacer"> - </span><span class="unit-price-max-dollar">$</span><span class="unit-price-max-value">3330</span></div>
+            <div><span class="unit-available-date">2026-11-01</span> <a applylink="https://example.com/apply/4015" class="unit-apply">Apply</a></div>
+          </div>
+          <div role="listitem" class="w-dyn-item unit-row">
+            <div class="unit-name-value">#1915</div>
+            <div><span class="unit-sqr-min-value">418</span> sq ft</div>
+            <div><span class="unit-price-min-dollar">$</span><span class="unit-price-min-value">2349</span></div>
+            <div><span class="unit-available-date">2026-12-20</span> <a applylink="https://example.com/apply/1915" class="unit-apply">Apply</a></div>
+            <div class="unit-fees w-dyn-list"><div class="w-dyn-items"><div class="w-dyn-item">Pet rent <span class="unit-fee-amount-value">35</span></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="units-empty">No units available.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 3. Details page variant: accordion ============ -->
+<h2>3. Details → accordion (in-flow)</h2>
+<div class="details">
+  <div class="propsync-units" data-units-display="accordion">
+    <div class="units-trigger">Show available units (<span class="units-count">0</span>) ▾</div>
+    <div class="units-panel">
+      <div class="units-list w-dyn-list">
+        <div role="list" class="w-dyn-items">
+          <div role="listitem" class="w-dyn-item unit-row">
+            <div class="unit-name-value">#12</div>
+            <div><span class="unit-sqr-min-value">900</span> sq ft</div>
+            <div><span class="unit-price-min-dollar">$</span><span class="unit-price-min-value">2100</span></div>
+            <div><span class="unit-available-date">2026-01-01</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="units-empty">No units available.</div>
+    </div>
+  </div>
+  <p>Content below the accordion moves down when it opens.</p>
+</div>
+
+<!-- ============ 4. Empty details modal (Webflow empty state) ============ -->
+<h2>4. Details → modal, no units</h2>
+<div class="details">
+  <div class="propsync-units" data-units-display="modal">
+    <button class="units-trigger">View units (<span class="units-count">0</span>)</button>
+    <div class="units-panel">
+      <div class="units-panel-header"><strong>Units</strong><button class="units-close" aria-label="Close">×</button></div>
+      <div class="units-list w-dyn-list"><div class="w-dyn-empty">No items found.</div></div>
+      <div class="units-empty">Be the first to know when this floorplan becomes available!</div>
+    </div>
+  </div>
+</div>
+
+<div style="height: 600px"></div>
+<script src="dist/propsync.js"></script>
+</body>
+</html>
