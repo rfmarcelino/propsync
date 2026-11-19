@@ -1678,6 +1678,11 @@ document.addEventListener('DOMContentLoaded', () => {
             text = text.replace(/\{\{starting_price\}\}/g, priceText);
           }
 
+          // Floor plan count: {{floorplan_count}} → "3"; legacy "Number of {{floor_type}} Floorplans" → "3 Floorplans"
+          const count = group.cards.length;
+          text = text.replace(/Number of \{\{floor_type\}\} Floor ?plans?/gi, `${count} Floorplan${count === 1 ? '' : 's'}`);
+          text = text.replace(/\{\{floorplan_count\}\}/g, count);
+
           // Replace {{floor_type}}
           text = text.replace(/\{\{floor_type\}\}/g, floorType);
 

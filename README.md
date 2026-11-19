@@ -64,7 +64,7 @@ npm run build        # Build once (manual)
 - `.accordion_accordion` → Template accordion containing mixed cards
   - `.accordion_question` → Accordion header
   - `.accordion_answer` → Contains `.card-wrapper` elements (directly or in `.floorplan-collection-list`)
-- **Placeholders**: `{{floor_type}}` and `{{starting_price}}` (replaced automatically)
+- **Placeholders**: `{{floor_type}}`, `{{starting_price}}` and `{{floorplan_count}}` (replaced automatically). The legacy text `Number of {{floor_type}} Floorplans` becomes e.g. `3 Floorplans` / `1 Floorplan`
 
 **Mode Detection:**
 - **Tab Mode**: `.propsync-tabs` exists
@@ -216,7 +216,7 @@ If the parameter value doesn't match any available filter:
         </div>
         <div class="floor-plan_square-feet">
           <div class="floorplan-accordian-text">
-            Starting at {{starting_price}} -- Number of {{floor_type}} Floorplans
+            Starting at {{starting_price}} -- {{floorplan_count}} Floorplans
           </div>
         </div>
       </div>
