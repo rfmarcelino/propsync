@@ -38,7 +38,7 @@
       <span class="startingat">Starting at </span><span class="price-min-dollar">$</span><span class="price-min-card-value">2349</span><span class="price-spacer"> - </span><span class="price-max-dollar">$</span><span class="price-max-card-value">3074</span>
     </div>
     <div class="availability-wrapper"><span class="available-items">12</span> <span class="available-text">available</span> <span class="available-sold-out">Sold Out</span></div>
-    <div class="propsync-units" data-floorplan="zilker" data-units-sync-count>
+    <div class="propsync-units" data-floorplan="zilker" data-units-sync-count data-units-visible-rows="1">
       <button class="units-trigger">See availability (<span class="units-count">0</span>)</button>
       <div class="units-panel">
         <div class="units-panel-header"><strong>Available units</strong><button class="units-close" aria-label="Close">×</button></div>
@@ -187,6 +187,31 @@
       <div class="units-list w-dyn-list"><div class="w-dyn-empty">No items found.</div></div>
       <div class="units-empty">Be the first to know when this floorplan becomes available!</div>
     </div>
+  </div>
+</div>
+
+<!-- ============ 5. Details page: static section (no trigger, always visible) ============ -->
+<h2>5. Details → static section (inline)</h2>
+<div class="details">
+  <div class="propsync-units" data-units-display="inline" data-units-sort="price">
+    <h3>Available units (<span class="units-count">0</span>)</h3>
+    <div class="units-list w-dyn-list">
+      <div role="list" class="w-dyn-items">
+        <div role="listitem" class="w-dyn-item unit-row">
+          <div class="unit-name-value">#501</div>
+          <div><span class="unit-sqr-min-value">700</span> sq ft</div>
+          <div><span class="unit-price-min-dollar">$</span><span class="unit-price-min-value">1999</span></div>
+          <div><span class="unit-available-date">March 3, 2027</span> <a applylink="https://example.com/apply/501" class="unit-apply">Apply</a></div>
+        </div>
+        <div role="listitem" class="w-dyn-item unit-row">
+          <div class="unit-name-value">#502</div>
+          <div><span class="unit-sqr-min-value">700</span> sq ft</div>
+          <div><span class="unit-price-min-dollar">$</span><span class="unit-price-min-value">1899</span></div>
+          <div><span class="unit-available-date">2026-11-02</span> <a applylink="https://example.com/apply/502" class="unit-apply">Apply</a></div>
+        </div>
+      </div>
+    </div>
+    <div class="units-empty">No units available.</div>
   </div>
 </div>
 

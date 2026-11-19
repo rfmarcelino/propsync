@@ -294,6 +294,8 @@ Shows the **Propsync - Units** collection (`propsync-units`) for a floorplan as 
 | `data-floorplan` | floorplan key (slug) used to pull rows from `.units-source` | falls back to text of `.floorplan-key-value` inside the card |
 | `data-units-sort` | `date`, `price`, `name`, `none` | `date` (then price, then name) |
 | `data-available-now-text` | label for dates ≤ today | `Available Now` |
+| `data-available-on-text` | prefix for future dates (`""` = date only) | `Available on` |
+| `data-units-visible-rows` | rows shown before the list scrolls | all rows |
 | `data-units-show-sold-out` | (flag) keep units with price ≤ 0 | hidden |
 | `data-units-hide-empty` | (flag) hide the whole component when 0 units | shows `.units-empty` |
 | `data-units-sync-count` | (flag) write unit count into the card's `.available-items` | off |
@@ -304,6 +306,7 @@ Shows the **Propsync - Units** collection (`propsync-units`) for a floorplan as 
 - State classes: `.propsync-units.is-open`, `.propsync-units.is-empty`, `.unit-row.is-available-now`, panel `.is-popover` / `.is-sheet` / `.is-modal`.
 - Default panel look (white, shadow, radius, max-height + scroll) is injected with zero specificity (`:where()`), so any Webflow styling on `.units-panel` wins. Positioning is inline and always applied.
 - To avoid a flash before the script runs, add to site head: `<style>.propsync-units:not(.is-open) .units-panel{display:none}</style>` (skip for `accordion`/`inline`).
+- `inline` = static section (e.g. a floorplan details page): no trigger or panel needed, just `.units-list` (+ optional `.units-count`, `.units-empty`) inside `.propsync-units`.
 
 ### Unit row (`.unit-row` on the Collection Item)
 
@@ -312,7 +315,7 @@ Shows the **Propsync - Units** collection (`propsync-units`) for a floorplan as 
 | `.unit-name-value` | name / number | used for `name` sort |
 | `.unit-sqr-min-value`, `.unit-sqr-spacer`, `.unit-sqr-max-value` | min / max sqft | max + spacer hidden when equal |
 | `.unit-startingat`, `.unit-price-min-dollar`, `.unit-price-min-value`, `.unit-price-spacer`, `.unit-price-max-dollar`, `.unit-price-max-value` | min / max rent | same "Starting at" vs range rules as cards; min ≤ 0 = unavailable (hidden) |
-| `.unit-available-date` | available-date | ≤ today → "Available Now"; otherwise Webflow's formatted date. Parses `YYYY-MM-DD`, `MM/DD/YYYY` or any `Date`-parsable text; `data-date` attribute wins if present |
+| `.unit-available-date` | available-date | ≤ today → "Available Now"; otherwise "Available on MM/DD/YYYY" (any Webflow date format in, original kept as `data-date`). Parses `YYYY-MM-DD`, `MM/DD/YYYY` or any `Date`-parsable text; `data-date` attribute wins if present |
 | `[applylink]` | Apply Link | same as everywhere: copied to `href` |
 | `.unit-floorplan-value` or `data-floorplan` attr | Floorplan → slug | only needed for rows in `.units-source` |
 | `.unit-specials`, `.unit-fees`, `.unit-features`, `.unit-lease-terms`, `[data-units-optional]` | nested lists (planned) | hidden when empty, so they can sit in the template before Propsync syncs them |

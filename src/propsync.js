@@ -1817,6 +1817,10 @@ document.addEventListener('DOMContentLoaded', () => {
     return isNaN(d.getTime()) ? null : d;
   };
 
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const formatUnitDate = (date) => `${pad2(date.getMonth() + 1)}/${pad2(date.getDate())}/${date.getFullYear()}`;
+  const toIsoDate = (date) => `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+
   const formatNumericText = (el, asCurrency = false) => {
     if (!el) return;
     const text = el.textContent.trim();
@@ -1858,13 +1862,18 @@ document.addEventListener('DOMContentLoaded', () => {
       maxDollar: q('.unit-price-max-dollar')
     });
 
-    // Available date: today or earlier → "Available Now"
+    // Available date: today or earlier → "Available Now", later → "Available on MM/DD/YYYY"
     const dateEl = q('.unit-available-date');
     const date = parseUnitDate(dateEl);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const availableNow = !!date && date <= today;
-    if (dateEl && availableNow) dateEl.textContent = options.availableNowText;
+    if (dateEl && date) {
+      if (!dateEl.hasAttribute('data-date')) dateEl.setAttribute('data-date', toIsoDate(date));
+      dateEl.textContent = availableNow
+        ? options.availableNowText
+        : `${options.availableOnText} ${formatUnitDate(date)}`.trim();
+    }
     row.classList.toggle('is-available-now', availableNow);
 
     // Apply links on rows fetched from paginated pages never saw the global [applylink] pass
@@ -1893,6 +1902,8 @@ document.addEventListener('DOMContentLoaded', () => {
     display: (component.getAttribute('data-units-display') || (component.closest('.card-wrapper') ? 'popover' : 'modal')).toLowerCase(),
     sort: (component.getAttribute('data-units-sort') || 'date').toLowerCase(),
     availableNowText: component.getAttribute('data-available-now-text') || 'Available Now',
+    availableOnText: component.getAttribute('data-available-on-text') ?? 'Available on',
+    visibleRows: parseInt(component.getAttribute('data-units-visible-rows'), 10) || 0,
     showSoldOut: component.hasAttribute('data-units-show-sold-out'),
     hideEmpty: component.hasAttribute('data-units-hide-empty'),
     syncCount: component.hasAttribute('data-units-sync-count')
@@ -1973,6 +1984,24 @@ document.addEventListener('DOMContentLoaded', () => {
     return count;
   };
 
+  // Cap the list at N rows (data-units-visible-rows); the rest scroll inside the list
+  const applyVisibleRows = (component, root) => {
+    const { visibleRows } = getUnitsOptions(component);
+    const list = (root || component).querySelector('.units-list');
+    if (!visibleRows || !list) return;
+    const rows = Array.from(list.querySelectorAll('.unit-row')).filter(r => !r.classList.contains('is-hidden'));
+    list.style.maxHeight = '';
+    if (rows.length <= visibleRows) {
+      list.style.overflowY = '';
+      return;
+    }
+    const height = rows[visibleRows - 1].getBoundingClientRect().bottom - list.getBoundingClientRect().top;
+    if (height > 0) {
+      list.style.maxHeight = `${Math.ceil(height)}px`;
+      list.style.overflowY = 'auto';
+    }
+  };
+
   // --- Open / close ---
   const positionUnitsPopover = (component) => {
     const { panel, trigger } = component._propsyncUnitsUI;
@@ -2041,6 +2070,7 @@ document.addEventListener('DOMContentLoaded', () => {
     trigger.setAttribute('aria-expanded', 'true');
 
     if (display === 'accordion') {
+      applyVisibleRows(component, panel);
       panel.style.maxHeight = panel.scrollHeight + 'px';
       panel.style.opacity = '1';
       // Grow an enclosing (already open) bedroom accordion so the units aren't clipped
@@ -2055,6 +2085,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(panel);
     panel.classList.add(UNITS_OPEN_CLASS);
     panel.style.display = 'block';
+    applyVisibleRows(component, panel);
 
     if (display === 'modal') {
       ui.backdrop = document.createElement('div');
@@ -2154,9 +2185,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const sourceLists = Array.from(document.querySelectorAll('.units-source'));
     const sourceUnitsByKey = new Map();
     const addSourceRows = (rows, list) => {
-      const availableNowText = list.getAttribute('data-available-now-text') || 'Available Now';
+      const rowOptions = {
+        availableNowText: list.getAttribute('data-available-now-text') || 'Available Now',
+        availableOnText: list.getAttribute('data-available-on-text') ?? 'Available on'
+      };
       rows.forEach(row => {
-        const unit = processUnitRow(row, { availableNowText });
+        const unit = processUnitRow(row, rowOptions);
         if (!unit.key) return;
         if (!sourceUnitsByKey.has(unit.key)) sourceUnitsByKey.set(unit.key, []);
         sourceUnitsByKey.get(unit.key).push(unit);
@@ -2173,6 +2207,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderAll = () => {
       let total = 0;
       components.forEach(c => { total += renderUnitsComponent(c, sourceUnitsByKey); });
+      components
+        .filter(c => getUnitsOptions(c).display === 'inline')
+        .forEach(c => applyVisibleRows(c));
       return total;
     };
 
